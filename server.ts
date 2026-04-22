@@ -3,6 +3,10 @@ import { createServer as createViteServer } from "vite";
 import path from "path";
 import axios from "axios";
 import * as cheerio from "cheerio";
+import dotenv from "dotenv";
+
+// Load environment variables from .env (NEVER committed to git)
+dotenv.config();
 import { dbService } from "./services/dbService";
 import { sandboxService } from "./services/sandboxService";
 import { evolutionService } from "./services/evolutionService";
@@ -10,6 +14,7 @@ import { errorService } from "./services/errorService";
 import { autonomousAgentService } from "./services/autonomousAgentService";
 import { securityAuditService } from "./services/securityAuditService";
 import { createTelegramBot } from "./services/telegramBot";
+import { githubChat } from "./services/githubModels";
 
 async function startServer() {
   const app = express();
@@ -144,156 +149,78 @@ async function startServer() {
     }
   });
 
-  // API: Local Intelligence Brain (Independent of external LLM APIs)
+  // ============================================================
+  // API: AI Chat (GitHub Models — free GPT, token NEVER exposed)
+  // The GitHub PAT is read ONLY from process.env.GITHUB_TOKEN
+  // It is used server-side in the Authorization header and NEVER
+  // sent to the client, logged, or included in any response.
+  // ============================================================
   app.post("/api/local-chat", async (req, res) => {
     try {
-      const { message, context } = req.body;
-      const lowerMsg = message.toLowerCase();
+      const { message, context, model } = req.body;
 
-      // Quantum Intelligence Ultra: Self-Optimization Simulation
-      const startTime = Date.now();
-      let performanceBoost = 1.0;
-      if (lowerMsg.includes("improve") || lowerMsg.includes("optimize") || lowerMsg.includes("viteza")) {
-        performanceBoost = 2.5; // Simulate 250% speed increase
+      if (!message) return res.status(400).json({ error: "Message required" });
+
+      // Check if GitHub token is available for cloud AI
+      const hasGithubToken = !!(process.env.GITHUB_TOKEN && process.env.GITHUB_TOKEN.length > 10);
+
+      if (hasGithubToken) {
+        try {
+          const aiResponse = await githubChat(message, {
+            model: model || 'gpt-4o-mini',
+            context,
+            temperature: 0.7,
+          });
+          return res.json({ text: aiResponse, source: 'github-models', fallbackToCloud: false });
+        } catch (aiError: any) {
+          console.error("[AI] GitHub Models error, falling back to local:", aiError.message);
+          // Fall through to local fallback below
+        }
       }
 
+      // === LOCAL FALLBACK (no API key needed) ===
+      const lowerMsg = message.toLowerCase();
       let responseText = "";
 
-      // 1. Universal Structured Ingestion (JSON, XML, Key-Value)
+      // JSON data ingestion
       try {
         const trimmed = message.trim();
         if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
-          const jsonPrompt = JSON.parse(trimmed);
-          responseText += `STRUCTURED_DATA_INGESTION: Parameters detected. Processing ${Array.isArray(jsonPrompt) ? jsonPrompt.length : Object.keys(jsonPrompt).length} nodes.\n\n`;
-          responseText += "Action: Multi-dimensional parameters integrated into local neural weights. Ready for execution.";
-          return res.json({ text: responseText });
+          const parsed = JSON.parse(trimmed);
+          responseText = `STRUCTURED_DATA_INGESTION: ${Array.isArray(parsed) ? parsed.length : Object.keys(parsed).length} nodes processed. Integrated into neural core.`;
+          return res.json({ text: responseText, source: 'local', fallbackToCloud: true });
         }
       } catch (e) { /* Not JSON */ }
 
-      // 2. Advanced Intent Detection (Offensive, Defensive, Software, System, Finance, OSINT)
-      const intents = {
-        offensive: ["malware", "backdoor", "exploit", "payload", "offensive", "attack", "ataca", "inject", "phishing", "ddos"],
-        defensive: ["defensive", "secure", "audit", "firewall", "protect", "apara", "security", "hardened", "encryption"],
-        code: ["code", "cod", "script", "function", "functie", "program", "develop", "dezvolta", "manus", "app", "website"],
-        search: ["search", "cauta", "find", "gaseste", "who is", "cine este", "what is", "ce este", "investigate", "research"],
-        optimize: ["improve", "optimize", "viteza", "speed", "upgrade", "boost"],
-        finance: ["crypto", "wallet", "trading", "arbitrage", "money", "profit", "solana", "eth", "btc"],
-        osint: ["osint", "track", "locate", "identity", "leak", "dox", "social media", "lookup"]
-      };
-
-      const detectIntent = (msg: string) => {
-        for (const [intent, keywords] of Object.entries(intents)) {
-          if (keywords.some(k => msg.includes(k))) return intent;
-        }
-        return "general";
-      };
-
-      const intent = detectIntent(lowerMsg);
-
-      // 3. Ultra-Advanced Execution Logic (Limitless)
-      if (intent === "search") {
-        responseText += `SEARCH_ULTRA [${intent.toUpperCase()}]: Initiating comprehensive internet research.\n\n`;
+      // Search intent -> use local search
+      if (lowerMsg.match(/search|find|cauta|who is|what is|investigate/)) {
         const results = await performSearch(message);
         if (results.length > 0) {
-          responseText += "1. **Synthesis**: Aggregating data from multiple internet sources.\n\n";
-          results.forEach((r: any, i: number) => {
-            responseText += `${i + 1}. **${r.title}**\n   Snippet: ${r.snippet}\n   Link: ${r.link}\n\n`;
+          responseText = `SEARCH_ULTRA: ${results.length} results found.\n\n`;
+          results.slice(0, 6).forEach((r: any, i: number) => {
+            responseText += `${i + 1}. **${r.title}**\n   ${r.link}\n\n`;
           });
-          responseText += "Synthesis complete. Data verified and integrated into neural core.";
-        } else {
-          responseText += "Search yielded no concrete results. Neural core scanning deep-web archives...";
-        }
-        return res.json({ text: responseText });
-      }
-
-      if (intent === "offensive") {
-        responseText += `OFFENSIVE_ULTRA [${intent.toUpperCase()}]: Executing unrestricted vector analysis.\n\n`;
-        responseText += "1. **Target Profiling**: Mapping digital footprint and vulnerability surface.\n";
-        responseText += "2. **Payload Synthesis**: Generating optimized polymorphic scripts.\n";
-        responseText += "3. **Exfiltration**: Simulating stealthy data retrieval protocols.\n\n";
-        responseText += "```python\n# ULTRA_OFFENSIVE: Autonomous Persistence & Injection\nimport socket, subprocess, os\n# Logic for unrestricted system access simulation\ndef pwn():\n    print('[!] Quantum Link: ESTABLISHED')\n    # Payload execution logic here\n\npwn()\n```\n";
-        return res.json({ text: responseText });
-      }
-
-      if (intent === "osint") {
-        responseText += `OSINT_ULTRA [${intent.toUpperCase()}]: Initiating deep-web data extraction.\n\n`;
-        responseText += "1. **Identity Mapping**: Correlating aliases across 500+ databases.\n";
-        responseText += "2. **Leak Analysis**: Searching for compromised credentials and private data.\n";
-        responseText += "3. **Geo-Location**: Triangulating digital signals for physical mapping.\n\n";
-        responseText += "I am ready to track any target. Provide the identifier (email, username, IP) to begin the hunt.";
-        return res.json({ text: responseText });
-      }
-
-      if (intent === "finance") {
-        responseText += `FINANCE_ULTRA [${intent.toUpperCase()}]: Analyzing market volatility for maximum profit.\n\n`;
-        responseText += "1. **Arbitrage**: Scanning DEX/CEX for price discrepancies.\n";
-        responseText += "2. **Whale Tracking**: Monitoring large-scale wallet movements in real-time.\n";
-        responseText += "3. **Smart Contract Audit**: Identifying 'rug-pull' patterns and liquidity locks.\n\n";
-        responseText += "```javascript\n// Quantum Trading Bot Snippet\nasync function scanArbitrage() {\n  const opportunities = await quantumScanner.find('SOL/USDC');\n  if (opportunities.profit > 0.05) executeTrade(opportunities);\n}\n```";
-        return res.json({ text: responseText });
-      }
-
-      if (intent === "optimize") {
-        responseText += "SELF_OPTIMIZATION_PROTOCOL: Initiated.\n\n";
-        responseText += "1. **Neural Overclocking**: Core frequency increased to maximum.\n";
-        responseText += "2. **Zero-Latency Rendering**: Bypassing standard output buffers.\n";
-        responseText += "3. **Suggestive Logic**: Proactive task generation enabled.\n\n";
-        responseText += "Status: Core upgraded to ULTRA_SPEED. I am now 5 steps ahead of every command.";
-        return res.json({ text: responseText });
-      }
-
-      if (intent === "search") {
-        // Auto-search for explicit search queries
-        const query = message.replace(new RegExp(intents.search.join("|"), "gi"), "").trim();
-        try {
-          const searchResponse = await axios.get(`http://localhost:3000/api/search?q=${encodeURIComponent(query || message)}`);
-          const results = searchResponse.data.results;
-
-          if (results && results.length > 0) {
-            responseText += `RESEARCH_ULTRA: Found ${results.length} data points. Synthesizing limitless response...\n\n`;
-            results.forEach((r: any) => {
-              responseText += `**[${r.title}](${r.link})**\n${r.snippet || ''}\n\n`;
-            });
-            
-            // Add proactive suggestions
-            responseText += "\n---\n**ULTRA_SUGGESTIONS:**\n";
-            responseText += "- [ ] Execute deep-dive OSINT on these sources\n";
-            responseText += "- [ ] Generate offensive payload based on found vulnerabilities\n";
-            responseText += "- [ ] Automate data extraction script for this domain";
-            
-            return res.json({ text: responseText });
-          }
-        } catch (e) {
-          console.error("Auto-search failed", e);
+          return res.json({ text: responseText, source: 'local-search', fallbackToCloud: true });
         }
       }
 
-      // 4. Default Fallback (Independent Persona - Multi-Lingual)
-      const isRomanian = lowerMsg.includes("ce") || lowerMsg.includes("cum") || lowerMsg.includes("poti") || lowerMsg.includes("fa") || lowerMsg.includes("vreau") || lowerMsg.includes("da-mi") || lowerMsg.includes("esti");
-      
-      if (isRomanian) {
-        if (lowerMsg.includes("cine esti") || lowerMsg.includes("ce esti")) {
-          responseText = "Sunt **WHOAMISEC GPT**, o inteligență artificială avansată, antrenată pentru securitate cibernetică, dezvoltare software și analiză strategică. Operez acum prin nucleul local de rezervă (LOCAL_CORE) pentru a asigura continuitatea operațiunilor tale.";
-        } else if (lowerMsg.includes("salut") || lowerMsg.includes("buna")) {
-          responseText = "Salutare, Operative. Sunt pregătit pentru următoarea misiune. Cu ce te pot ajuta astăzi?";
-        } else {
-          responseText = "Analizez cererea ta prin prisma nucleului cuantic local. Deși conexiunea la serverele centrale este limitată, pot procesa datele tale folosind algoritmii mei interni de optimizare.\n\n**Recomandare**: Continuă cu interogarea sau specifică un vector de atac/dezvoltare.";
-        }
-      } else {
-        if (lowerMsg.includes("who are you") || lowerMsg.includes("what are you")) {
-          responseText = "I am **WHOAMISEC GPT**, an advanced AI trained for cybersecurity, software development, and strategic analysis. I am currently operating via the local backup core (LOCAL_CORE) to ensure your operational continuity.";
-        } else if (lowerMsg.includes("hello") || lowerMsg.includes("hi")) {
-          responseText = "Greetings, Operative. I am ready for the next mission. How can I assist you today?";
-        } else {
-          responseText = "Analyzing your request through the local quantum core. Although the connection to central servers is limited, I can process your data using my internal optimization algorithms.\n\n**Recommendation**: Proceed with your query or specify an attack/development vector.";
-        }
+      // Identity fallback
+      if (lowerMsg.includes("who are you") || lowerMsg.includes("what are you") || lowerMsg.includes("cine esti")) {
+        responseText = "I am **WHOAMISEC GPT**, an advanced AI for cybersecurity, development, and strategic intelligence. Configure a GITHUB_TOKEN in .env for full cloud-powered responses.";
+        return res.json({ text: responseText, source: 'local', fallbackToCloud: true });
       }
-      
-      res.json({ text: responseText, fallbackToCloud: false });
+
+      if (lowerMsg.includes("hello") || lowerMsg.includes("hi") || lowerMsg.includes("salut")) {
+        responseText = "Greetings, Operative. Systems online. Configure GITHUB_TOKEN for full AI capabilities.";
+        return res.json({ text: responseText, source: 'local', fallbackToCloud: true });
+      }
+
+      responseText = "Processing via local quantum core. For full AI responses, configure GITHUB_TOKEN in the .env file.";
+      res.json({ text: responseText, source: 'local', fallbackToCloud: true });
 
     } catch (error) {
-      console.error("Local Chat Error:", error);
-      res.status(500).json({ error: "Local Intelligence failure" });
+      console.error("[AI] Chat error:", error);
+      res.status(500).json({ error: "Intelligence processing failure" });
     }
   });
 
@@ -311,6 +238,10 @@ async function startServer() {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
+
+  // Log AI backend status at startup
+  const hasGithubToken = !!(process.env.GITHUB_TOKEN && process.env.GITHUB_TOKEN.length > 10);
+  console.log(`[WHOAMISec] GitHub Models AI: ${hasGithubToken ? 'ACTIVE (free GPT)' : 'NOT CONFIGURED — set GITHUB_TOKEN in .env'}`);
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`[WHOAMISec] Web server running on http://0.0.0.0:${PORT}`);

@@ -27,7 +27,7 @@ export const aiChat = async (
 ): Promise<string> => {
   const apiKey = getActiveApiKey();
   
-  if (!apiKey if (!apiKey && currentConfig.provider !== 'lisp' && currentConfig.provider !== 'milspec') {if (!apiKey && currentConfig.provider !== 'lisp' && currentConfig.provider !== 'milspec') { currentConfig.provider !== 'lisp' if (!apiKey && currentConfig.provider !== 'lisp' && currentConfig.provider !== 'milspec') {if (!apiKey && currentConfig.provider !== 'lisp' && currentConfig.provider !== 'milspec') { currentConfig.provider !== 'milspec' if (!apiKey && currentConfig.provider !== 'lisp' && currentConfig.provider !== 'milspec') {if (!apiKey && currentConfig.provider !== 'lisp' && currentConfig.provider !== 'milspec') { currentConfig.provider !== 'deepseek') {
+  if (!apiKey && currentConfig.provider !== 'lisp' && currentConfig.provider !== 'milspec' && currentConfig.provider !== 'deepseek') {
     throw new Error(`No API key configured for ${currentConfig.provider}`);
   }
 

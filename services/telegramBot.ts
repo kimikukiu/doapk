@@ -1,6 +1,11 @@
 import TelegramBot from 'node-telegram-bot-api';
 
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '8703989321:AAHSJ9LduqrcFgi2X7awZND0KuMreffKprE';
+// Token read from .env only — NEVER hardcoded, NEVER exposed in responses
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
+
+if (!TELEGRAM_BOT_TOKEN) {
+  console.error('[WHOAMISec Bot] TELEGRAM_BOT_TOKEN not set in .env');
+}
 
 class WHOAMISecTelegramBot {
   private bot: TelegramBot;

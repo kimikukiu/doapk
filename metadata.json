@@ -1,0 +1,9 @@
+{
+  "name": "WHOAMISec Pro",
+  "description": "Professional high-density OSINT & Botnet C2 Suite. 800K Zombie Swarm Integration.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}

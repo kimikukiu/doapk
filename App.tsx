@@ -17,7 +17,7 @@ import { AppTab, LogEntry, OSINTResult, ThreatFeedItem, Exploit, ExploitHistoryI
 import { analyzeTarget, generateLeakedData } from './services/geminiService';
 import AIConfigPanel from './components/AIConfigPanel';
 import { setAIConfig, loadAIConfigFromStorage } from './src/services/aiService';
-// LoginGate bypassed for preview
+import LoginGate from './components/LoginGate';
 
 import GptTool from './components/tools/GptTool';
 import IdeTool from './components/tools/IdeTool';
@@ -874,6 +874,7 @@ const ResultPane = ({ title, icon, items, color }: { title: string, icon: string
 
 const App: React.FC = () => {
   return (
+    <LoginGate>
     <Routes>
         <Route path="/" element={<MainApp />} />
         <Route path="/gpt-tool" element={<GptTool />} />
@@ -888,6 +889,7 @@ const App: React.FC = () => {
         <Route path="/burpsuite-tool" element={<BurpSuiteTool />} />
         <Route path="/owasp-tool" element={<OwaspTool />} />
       </Routes>
+    </LoginGate>
   );
 };
 

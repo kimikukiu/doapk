@@ -1,10 +1,12 @@
 import TelegramBot from 'node-telegram-bot-api';
 
-// Token read from .env only — NEVER hardcoded, NEVER exposed in responses
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
-
-if (!TELEGRAM_BOT_TOKEN) {
-  console.error('[WHOAMISec Bot] TELEGRAM_BOT_TOKEN not set in .env');
+function getTelegramToken(): string {
+  // Token read from .env only — NEVER hardcoded, NEVER exposed in responses
+  const token = process.env.TELEGRAM_BOT_TOKEN || '';
+  if (!token) {
+    console.error('[WHOAMISec Bot] TELEGRAM_BOT_TOKEN not set in .env');
+  }
+  return token;
 }
 
 class WHOAMISecTelegramBot {
@@ -317,7 +319,12 @@ _Use /web to access the full dashboard._
 }
 
 export function createTelegramBot() {
-  return new WHOAMISecTelegramBot(TELEGRAM_BOT_TOKEN);
+  const token = getTelegramToken();
+  if (!token) {
+    console.error('[WHOAMISec Bot] Skipping — no TELEGRAM_BOT_TOKEN in .env');
+    return null;
+  }
+  return new WHOAMISecTelegramBot(token);
 }
 
 export default WHOAMISecTelegramBot;

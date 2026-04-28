@@ -1,4 +1,28 @@
 
+import type { AIConfig } from '../../types';
+
+const DEFAULT_AI_CONFIG: AIConfig = {
+  provider: 'openrouter',
+  openrouterKey: '',
+  openaiKey: '',
+  anthropicKey: '',
+  geminiKey: '',
+  mistralKey: '',
+  llamaKey: '',
+  deepseekKey: '',
+  deepseekBaseUrl: '',
+  selectedModel: 'gpt-4o-mini',
+  enableGemini: false,
+};
+
+let currentConfig: AIConfig = { ...DEFAULT_AI_CONFIG };
+
+export const setAIConfig = (config: AIConfig) => {
+  currentConfig = { ...config };
+};
+
+export const getAIConfig = (): AIConfig => ({ ...currentConfig });
+
 export const getActiveApiKey = (): string => {
   switch (currentConfig.provider) {
     case 'openrouter':

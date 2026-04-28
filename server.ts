@@ -1,12 +1,11 @@
+import dotenv from "dotenv";
+import path from "path";
+dotenv.config({ path: path.resolve('/home/z/my-project/doapk/.env') });
+
 import express from "express";
 import { createServer as createViteServer } from "vite";
-import path from "path";
 import axios from "axios";
 import * as cheerio from "cheerio";
-import dotenv from "dotenv";
-
-// Load environment variables from .env (NEVER committed to git)
-dotenv.config();
 import { dbService } from "./services/dbService";
 import { sandboxService } from "./services/sandboxService";
 import { evolutionService } from "./services/evolutionService";
@@ -232,10 +231,11 @@ async function startServer() {
     });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
+    // In production, serve API only (no static files needed for bot + API)
+    app.use((req, res) => {
+      if (!req.path.startsWith('/api/')) {
+        res.json({ status: 'WHOAMISec API Active', message: 'Web dashboard requires running `npm run build` first.' });
+      }
     });
   }
 
@@ -251,7 +251,11 @@ async function startServer() {
   // Start Telegram Bot
   try {
     const bot = createTelegramBot();
-    console.log(`[WHOAMISec] Telegram bot connected and polling`);
+    if (bot) {
+      console.log(`[WHOAMISec] Telegram bot connected and polling`);
+    } else {
+      console.log(`[WHOAMISec] Telegram bot skipped — set TELEGRAM_BOT_TOKEN in .env`);
+    }
   } catch (error) {
     console.error(`[WHOAMISec] Telegram bot failed to start:`, error);
   }

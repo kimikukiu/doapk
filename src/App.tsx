@@ -60,7 +60,7 @@ const STRATEGIES = {
 };
 
 const MainApp: React.FC = () => {
-  const [isAdmin, setIsAdmin] = useLocalStorage('app_isAdmin', false);
+  const [isAdmin, setIsAdmin] = useLocalStorage('app_isAdmin', true);
   const [authInput, setAuthInput] = useState('');
   
   const handleAuth = () => {

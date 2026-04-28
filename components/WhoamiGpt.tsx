@@ -37,8 +37,8 @@ const MemoizedMessageList = React.memo(({ messages, copyToClipboard }: { message
       {messages.length === 0 && (
         <div className="h-full flex flex-col items-center justify-center text-center p-2">
           <div className="text-[#dc2626] text-xl mb-1 animate-pulse">⚡</div>
-          <p className="text-[8px] font-black text-[#dc2626] uppercase tracking-[0.2em]">UNIVERSAL OMNISCIENT INTELLIGENCE</p>
-          <p className="text-[7px] text-gray-500 mt-1 max-w-[180px]">I am the Alien Space Quantum Intelligence Swarm. Ready for any task.</p>
+          <p className="text-[8px] font-black text-[#dc2626] uppercase tracking-[0.2em]">WHOAMISec MANUS — Autonomous Agent</p>
+          <p className="text-[7px] text-gray-500 mt-1 max-w-[180px]">Trained by WHOAMISec Swarm. Think. Plan. Search. Execute. Verify. Self-Repair.</p>
         </div>
       )}
       {messages.map((m, i) => (
@@ -138,6 +138,8 @@ const WhoamiGpt: React.FC<WhoamiGptProps> = ({ addLog, onMinimize, openTerminal,
   const [isHarvesting, setIsHarvesting] = useState(false);
   const [harvestLogs, setHarvestLogs] = useState<string[]>([]);
   const [activeHarvestedKey, setActiveHarvestedKey] = useState<string>(getActiveKey() || '');
+  const [manusSteps, setManusSteps] = useState<Array<{phase: string; content: string; duration_ms: number; tool?: string}>>([]);
+  const [manusMode, setManusMode] = useState(true); // Manus agentic mode ON by default
   
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -346,71 +348,135 @@ CRITICAL RULES:
     setIsContinuous(true);
     stopRef.current = false;
     setTerminalLogs([]);
+    setManusSteps([]);
     
     try {
-      let currentContext = `Current Code: ${code}\nUploaded Files: ${uploadedFiles.map(f => f.name).join(', ')}`;
-      let lastResponse = "";
-      
-      // Autonomous Loop: Continues until stopRef is true or a natural conclusion is reached
-      let iterations = 0;
-      const maxIterations = 5; // Restored autonomous loop, capped at 5 to prevent infinite hangs
+      // ============================================================
+      // MANUS AGENTIC MODE — Full Think/Plan/Search/Execute/Verify/Report
+      // Trained by WHOAMISec Swarm, powered by GitHub Models
+      // ============================================================
+      if (manusMode) {
+        addLog(`[MANUS] Autonomous agent initiated. Task: "${userMsg.substring(0, 60)}..."`, "warning");
+        setTerminalLogs(prev => [...prev, `[MANUS] WHOAMISec Manus Engine V3.0 — Trained by Swarm`]);
+        setTerminalLogs(prev => [...prev, `[MANUS] Phase: THINK → PLAN → SEARCH → EXECUTE → VERIFY → REPORT`]);
 
-      while (iterations < maxIterations && !stopRef.current) {
-        iterations++;
-        addLog(`SWARM: Initiating autonomous neural cycle ${iterations}/${maxIterations}...`, "info");
-        
-        const autonomousPrompt = iterations === 1 
-          ? userMsg 
-          : `[AUTONOMOUS CYCLE ${iterations}]
-             PREVIOUS_OUTPUT: ${lastResponse.substring(0, 500)}...
-             
-             INSTRUCTION: Continue the task. If the user's request is fully resolved, you MUST include the exact phrase "TASK_COMPLETE" in your response. If you need to do more, just provide the next step.`;
+        const manusResponse = await fetch('/api/manus-chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: userMsg,
+            mode: 'agentic',
+            model: selectedModel.includes('gpt-4o') && !selectedModel.includes('mini') ? 'gpt-4o' : 'gpt-4o-mini',
+            history: messages.slice(-10).map(m => ({ role: m.role, content: m.content })),
+          }),
+        });
 
-        const response = await executeSwarmLogic(autonomousPrompt, currentContext);
-        lastResponse = response;
-        
-        setMessages(prev => [...prev, { role: 'assistant', content: response || '', agentRole: activeRole }]);
-        
-        // Check for installation commands in the response
-        // Format: [INSTALL: Name | Description | Source(link/upload) | Data]
-        const installRegex = /\[INSTALL:\s*(.*?)\s*\|\s*(.*?)\s*\|\s*(link|upload)\s*\|\s*(.*?)\]/g;
-        let match;
-        while ((match = installRegex.exec(response)) !== null) {
-          const [_, name, desc, src, data] = match;
-          installSoftware(name, desc, src as 'link' | 'upload', data);
+        if (manusResponse.ok) {
+          const data = await manusResponse.json();
+          
+          // Display real-time manus steps in terminal
+          if (data.steps && data.steps.length > 0) {
+            data.steps.forEach((step: any) => {
+              const phaseIcon = {
+                think: '🧠', plan: '📋', search: '🔍', execute: '⚡',
+                verify: '✅', report: '📊', self_repair: '🔧',
+              }[step.phase] || '⚙️';
+              
+              setTerminalLogs(prev => [...prev, 
+                `${phaseIcon} [${step.phase.toUpperCase()}] ${step.content.substring(0, 120)}${step.content.length > 120 ? '...' : ''}`
+              ]);
+              
+              if (step.tool) {
+                setTerminalLogs(prev => [...prev, `   ↳ Tool: ${step.tool} (${step.duration_ms}ms)`]);
+              }
+            });
+            setManusSteps(data.steps.map((s: any) => ({ phase: s.phase, content: s.content.substring(0, 200), duration_ms: s.duration_ms, tool: s.tool })));
+          }
+
+          const finalText = data.text || data.result || 'Task completed.';
+          setMessages(prev => [...prev, { role: 'assistant', content: finalText, agentRole: 'ORCHESTRATOR' }]);
+
+          // Extract code for IDE
+          const codeMatch = finalText.match(/```[\w]*\n([\s\S]*?)```/);
+          if (codeMatch && codeMatch[1]) {
+            setCode(codeMatch[1].trim());
+            addLog('[MANUS] Code synchronized to IDE.', 'success');
+          }
+
+          addLog(`[MANUS] Session ${data.sessionId || 'complete'} — ${data.status} — ${data.tokens || 0} tokens`, 'success');
+        } else {
+          // Fallback to existing swarm logic if manus endpoint fails
+          addLog('[MANUS] Agent endpoint unavailable. Falling back to swarm mode...', 'warning');
+          await runLegacySwarm(userMsg);
         }
-
-        // Update context
-        currentContext += `\nCycle ${iterations} Result: ${response.substring(0, 200)}...`;
-
-        if (response.toUpperCase().includes("TASK_COMPLETE") || response.toLowerCase().includes("objective achieved")) {
-          addLog("SWARM: Objective achieved. Neural loop terminated.", "success");
-          break;
-        }
-        
-        if (response.includes("CORE_ERROR") || response.includes("OFFLINE/INDEPENDENT")) {
-          addLog("SWARM: Error or offline mode detected. Halting autonomous loop.", "warning");
-          break;
-        }
-
-        if (iterations < maxIterations && !stopRef.current) {
-          addLog(`SWARM: Cycle ${iterations} finished. Preparing next cycle... (Click STOP to halt)`, "warning");
-          // Reduced delay to prevent blocking for too long
-          await new Promise(resolve => setTimeout(resolve, 500));
-        }
+      } else {
+        // Legacy swarm mode
+        await runLegacySwarm(userMsg);
       }
       
-      addLog("SWARM: Autonomous sequence completed.", "success");
     } catch (err: any) {
-      const errorMsg = err?.message || 'Unknown error';
-      addLog(`GPT_ERROR: ${errorMsg}`, "error");
-      setMessages(prev => [...prev, { role: 'assistant', content: `**⚡ LISP Engine Active**\n\nThe cloud API is not configured. Go to **AI Config** in the sidebar and select **LISP Engine** or **MIL-SPEC Tactical** for full offline operation.\n\nOr add an API key for OpenRouter/OpenAI/DeepSeek/Gemini.\n\n_Error: ${errorMsg}_`, agentRole: activeRole }]);
+      console.error('[MANUS] Error:', err);
+      addLog(`GPT_ERROR: ${err?.message || 'Unknown error'}`, "error");
+      
+      // Try legacy fallback
+      try {
+        await runLegacySwarm(userMsg);
+      } catch {
+        setMessages(prev => [...prev, { 
+          role: 'assistant', 
+          content: `**⚡ WHOAMISec Manus — Self-Repair**\n\nError encountered: ${err?.message}. Attempting recovery via local LISP Engine.\n\nGo to **AI Config** to configure API providers for full autonomous capabilities.`, 
+          agentRole: activeRole 
+        }]);
+      }
     } finally {
       setIsTyping(false);
       setIsContinuous(false);
       setUploadedFiles([]);
-      setTerminalLogs([]);
     }
+  };
+
+  // Legacy swarm logic (used when manus mode is off or as fallback)
+  const runLegacySwarm = async (userMsg: string) => {
+    let currentContext = `Current Code: ${code}\nUploaded Files: ${uploadedFiles.map(f => f.name).join(', ')}`;
+    let lastResponse = "";
+    let iterations = 0;
+    const maxIterations = 5;
+
+    while (iterations < maxIterations && !stopRef.current) {
+      iterations++;
+      addLog(`SWARM: Initiating autonomous neural cycle ${iterations}/${maxIterations}...`, "info");
+      
+      const autonomousPrompt = iterations === 1 
+        ? userMsg 
+        : `[AUTONOMOUS CYCLE ${iterations}]
+           PREVIOUS_OUTPUT: ${lastResponse.substring(0, 500)}...
+           INSTRUCTION: Continue the task. If fully resolved, include "TASK_COMPLETE".`;
+
+      const response = await executeSwarmLogic(autonomousPrompt, currentContext);
+      lastResponse = response;
+      setMessages(prev => [...prev, { role: 'assistant', content: response || '', agentRole: activeRole }]);
+
+      const installRegex = /\[INSTALL:\s*(.*?)\s*\|\s*(.*?)\s*\|\s*(link|upload)\s*\|\s*(.*?)\]/g;
+      let match;
+      while ((match = installRegex.exec(response)) !== null) {
+        const [_, name, desc, src, data] = match;
+        installSoftware(name, desc, src as 'link' | 'upload', data);
+      }
+
+      currentContext += `\nCycle ${iterations} Result: ${response.substring(0, 200)}...`;
+
+      if (response.toUpperCase().includes("TASK_COMPLETE") || response.toLowerCase().includes("objective achieved")) {
+        addLog("SWARM: Objective achieved.", "success");
+        break;
+      }
+
+      if (response.includes("CORE_ERROR") || response.includes("OFFLINE/INDEPENDENT")) break;
+
+      if (iterations < maxIterations && !stopRef.current) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    }
+    addLog("SWARM: Autonomous sequence completed.", "success");
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -493,7 +559,7 @@ CRITICAL RULES:
           <div className="flex items-center gap-1.5">
             <div className="w-5 h-5 bg-black rounded-full flex items-center justify-center border border-[#dc2626] text-[#dc2626] font-bold text-[9px]">⚡</div>
             <div>
-              <h2 className="text-[9px] font-black text-white uppercase tracking-[0.1em]">WHOAMISec GPT <span className="bg-black text-[#dc2626] px-1 py-0.5 rounded text-[5px] ml-1">UNCENSORED</span></h2>
+              <h2 className="text-[9px] font-black text-white uppercase tracking-[0.1em]">WHOAMISec GPT <span className="bg-black text-[#dc2626] px-1 py-0.5 rounded text-[5px] ml-1">MANUS</span></h2>
             </div>
           </div>
           <div className="flex items-center gap-1">
@@ -510,6 +576,13 @@ CRITICAL RULES:
                 className={`px-2 py-0.5 rounded text-[8px] font-black uppercase transition-all ${view === 'chat' ? 'bg-[#dc2626] text-white' : 'text-gray-400 hover:text-white'}`}
               >
                 Chat
+              </button>
+              <button 
+                onClick={() => setManusMode(!manusMode)}
+                className={`px-2 py-0.5 rounded text-[8px] font-black uppercase transition-all ${manusMode ? 'bg-[#00ffc3] text-black' : 'text-gray-500 hover:text-white'}`}
+                title={manusMode ? "Manus Agentic Mode ON — Think/Plan/Search/Execute/Verify/Report" : "Manus Agentic Mode OFF — Standard Chat"}
+              >
+                {manusMode ? 'MANUS' : 'CHAT'}
               </button>
               <button 
                 onClick={() => setIsLocalMode(!isLocalMode)}

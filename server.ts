@@ -14,6 +14,7 @@ import { autonomousAgentService } from "./services/autonomousAgentService";
 import { securityAuditService } from "./services/securityAuditService";
 import { createTelegramBot } from "./services/telegramBot";
 import { githubChat } from "./services/githubModels";
+import { runManusSession, manusQuickChat } from "./services/deepManusEngine";
 
 async function startServer() {
   const app = express();
@@ -220,6 +221,53 @@ async function startServer() {
     } catch (error) {
       console.error("[AI] Chat error:", error);
       res.status(500).json({ error: "Intelligence processing failure" });
+    }
+  });
+
+  // ============================================================
+  // API: WHOAMISec Manus Agent (Autonomous Agentic AI)
+  // Trained by WHOAMISec Swarm — GitHub Models powered.
+  // Full Think→Plan→Search→Execute→Verify→Report loop.
+  // ============================================================
+  app.post("/api/manus-chat", async (req, res) => {
+    try {
+      const { message, mode, model, history } = req.body;
+      if (!message) return res.status(400).json({ error: "Message required" });
+
+      // Quick mode = single response (no agentic loop)
+      if (mode === 'quick') {
+        const result = await manusQuickChat(message, model || 'gpt-4o-mini');
+        return res.json({ text: result.text, source: result.source, steps: [] });
+      }
+
+      // Agentic mode = full Manus loop with real-time steps
+      const steps: any[] = [];
+      const session = await runManusSession(message, {
+        model: model || 'gpt-4o-mini',
+        conversationHistory: history || [],
+        maxIterations: 10,
+        onStep: (step) => {
+          steps.push(step);
+          // Send SSE event for real-time streaming
+          if (res.write) {
+            res.write(`data: ${JSON.stringify({ type: 'step', step })}\n\n`);
+          }
+        },
+      });
+
+      // Final report is the last 'report' step, or last step overall
+      const reportStep = [...session.steps].reverse().find(s => s.phase === 'report') || session.steps[session.steps.length - 1];
+      return res.json({
+        text: reportStep?.content || 'Task completed.',
+        source: `manus:${session.model}`,
+        steps: session.steps,
+        sessionId: session.id,
+        status: session.status,
+        tokens: session.totalTokens,
+      });
+    } catch (error: any) {
+      console.error("[MANUS] Agent error:", error.message);
+      res.status(500).json({ error: `Manus Agent error: ${error.message}` });
     }
   });
 

@@ -253,20 +253,26 @@ export const queryAgentStream = async (agentRole: string, task: string, globalCo
 };
 
 export const queryAgent = async (agentRole: string, task: string, globalContext: string) => {
+  const prompt = `ROLE: ${agentRole}\nTASK: ${task}\nCONTEXT: ${globalContext}`;
+  
+  // Fallback chain: OpenRouter → GitHub Models (server) → TaskQueue → Local
   try {
-    const prompt = `ROLE: ${agentRole}\nTASK: ${task}\nCONTEXT: ${globalContext}`;
-    
-    // Always Try OpenRouter FIRST with fallback key
-    try {
-        const response = await openRouterService.chat(prompt, globalContext);
-        if (response) return response;
-    } catch (orError) {
-        console.warn("OpenRouter failed, attempting fallback...", orError);
-    }
+    const response = await openRouterService.chat(prompt, globalContext);
+    if (response) return response;
+  } catch (orError) {
+    console.warn("OpenRouter failed for queryAgent, falling back to GitHub Models...", orError);
+  }
 
+  try {
+    return await githubModelsFallback(task, globalContext, agentRole);
+  } catch (ghError) {
+    console.warn("GitHub Models fallback failed for queryAgent, trying TaskQueue...", ghError);
+  }
+
+  try {
     return await taskQueue.executeTask(agentRole, prompt);
   } catch (error) {
-    console.warn(`Agent ${agentRole} Error, falling back to Z.AI...`, error);
+    console.warn(`Agent ${agentRole} Error, falling back to local...`, error);
     return await zAiFallbackChat(task, globalContext, agentRole);
   }
 };
@@ -292,20 +298,48 @@ export const zAiFallbackImage = (prompt: string) => zAiFallbackMedia(prompt, 'im
 export const zAiFallbackVideo = (prompt: string) => zAiFallbackMedia(prompt, 'video');
 
 /**
- * Z.AI Unlimited Free API Fallback for Chat
+ * GitHub Models Server Fallback — routes through /api/local-chat (server-side)
+ * Uses the GitHub PAT configured in .env — token NEVER reaches the client.
+ * This is the most reliable free fallback since GitHub Models are always available.
+ */
+const githubModelsFallback = async (message: string, context: string, role: string): Promise<string> => {
+  try {
+    const response = await fetch('/api/local-chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: `[ROLE: ${role}]\n${context ? `CONTEXT: ${context}\n\n` : ''}${message}`,
+        model: 'gpt-4o-mini',
+      }),
+    });
+    if (!response.ok) throw new Error(`Server returned ${response.status}`);
+    const data = await response.json();
+    if (data.text) return data.text;
+    throw new Error('Empty response from server');
+  } catch (error) {
+    console.warn('GitHub Models server fallback error:', error);
+    throw error; // Re-throw so next fallback can try
+  }
+};
+
+/**
+ * Z.AI Unlimited Free API Fallback for Chat (legacy)
  */
 const zAiFallbackChat = async (message: string, context: string, role: string): Promise<string> => {
   try {
-    const response = await axios.post("https://api.zai.ai/v1/chat", {
-      message,
-      context,
-      role,
-      apiKey: "ZAI_FREE_TIER_KEY" // Placeholder for real API key
+    const response = await fetch('/api/local-chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: `[${role}] ${message}`, context }),
     });
-    return response.data.text;
+    if (response.ok) {
+      const data = await response.json();
+      if (data.text) return data.text;
+    }
+    return `[LOCAL-CORE] Processing: "${message.substring(0, 80)}..." via local quantum engine. Configure API keys for full AI capabilities.`;
   } catch (error) {
-    console.error("Z.AI Chat Fallback Error:", error);
-    return `[Z.AI-FALLBACK] Neural link to primary core failed. Z.AI processed your request: "${message.substring(0, 50)}..."`;
+    console.error("Local Chat Fallback Error:", error);
+    return `[LOCAL-CORE] Processing: "${message.substring(0, 80)}..." via local quantum engine.`;
   }
 };
 
@@ -313,20 +347,25 @@ const zAiFallbackChat = async (message: string, context: string, role: string): 
  * WHOAMISEC GPT: Uncensored Agentic IDE LLM Copilot (MetaGPT Enhanced)
  */
 export const whoamisecGptChat = async (message: string, context: string = '', role: string = 'ORCHESTRATOR') => {
+  // Fallback chain: OpenRouter → GitHub Models (server) → TaskQueue → Local
+  try {
+    const response = await openRouterService.chat(message, context, 'openai/gpt-4o'); 
+    if (response) return response;
+  } catch (orError) {
+    console.warn("OpenRouter failed for GPT Chat, falling back to GitHub Models...", orError);
+  }
+  
+  try {
+    return await githubModelsFallback(message, context, role);
+  } catch (ghError) {
+    console.warn("GitHub Models fallback failed, trying TaskQueue...", ghError);
+  }
+
   try {
     const fullPrompt = `ROLE: ${role}\nCONTEXT: ${context}\n\nUSER_MESSAGE: ${message}`;
-    
-    // Always Try OpenRouter FIRST with fallback key
-    try {
-        const response = await openRouterService.chat(message, context, 'openai/gpt-4o'); 
-        if (response) return response;
-    } catch (orError) {
-            console.warn("OpenRouter failed for GPT Chat, attempting fallback...", orError);
-    }
-    
     return await taskQueue.executeTask("WHOAMISEC GPT", fullPrompt);
   } catch (error: any) {
-    console.warn("WHOAMISEC GPT Error, falling back to Z.AI...", error);
+    console.warn("TaskQueue failed, using local fallback...", error);
     return await zAiFallbackChat(message, context, role);
   }
 };

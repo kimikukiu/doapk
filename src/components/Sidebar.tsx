@@ -17,6 +17,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab, target = "NO
     { id: AppTab.OSINT_DASHBOARD, label: 'OSINT Dashboard', icon: 'fa-globe' },
     { id: AppTab.EXTRACTOR, label: 'Deep Extractor', icon: 'fa-user-secret' },
     { id: AppTab.SQL_INJECT, label: 'Payload Vault', icon: 'fa-database' },
+    { id: AppTab.AI_CONFIG, label: 'API Manager', icon: 'fa-key' },
     { id: AppTab.NETWORK, label: 'Attack Console', icon: 'fa-satellite-dish' },
     { id: AppTab.ZXCDDOS, label: 'ZxCDDoS', icon: 'fa-bolt' },
     { id: AppTab.IDE_TOOL, label: 'Quantum IDE', icon: 'fa-code' },

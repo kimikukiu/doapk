@@ -1,6 +1,5 @@
 import dotenv from "dotenv";
-import path from "path";
-dotenv.config({ path: path.resolve('/home/z/my-project/doapk/.env') });
+dotenv.config();
 
 import express from "express";
 import { createServer as createViteServer } from "vite";
@@ -296,17 +295,19 @@ async function startServer() {
     console.log(`[WHOAMISec] Web dashboard: http://localhost:${PORT}`);
   });
 
-  // Start Telegram Bot
-  try {
-    const bot = createTelegramBot();
-    if (bot) {
-      console.log(`[WHOAMISec] Telegram bot connected and polling`);
-    } else {
-      console.log(`[WHOAMISec] Telegram bot skipped — set TELEGRAM_BOT_TOKEN in .env`);
+  // Start Telegram Bot (non-blocking)
+  setImmediate(() => {
+    try {
+      const bot = createTelegramBot();
+      if (bot) {
+        console.log(`[WHOAMISec] Telegram bot connected and polling`);
+      } else {
+        console.log(`[WHOAMISec] Telegram bot skipped — set TELEGRAM_BOT_TOKEN in .env`);
+      }
+    } catch (error) {
+      console.error(`[WHOAMISec] Telegram bot failed to start:`, error);
     }
-  } catch (error) {
-    console.error(`[WHOAMISec] Telegram bot failed to start:`, error);
-  }
+  });
 }
 
 startServer();

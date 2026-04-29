@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AIConfig, AIProvider } from '../../types';
+import { AIConfig, AIProvider } from '../types';
 import { getAIConfig, setAIConfig, getActiveApiKey } from '../services/aiService';
 
 const ApiConfigPanel: React.FC = () => {

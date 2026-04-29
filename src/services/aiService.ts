@@ -1,5 +1,5 @@
 
-import type { AIConfig } from '../../types';
+import type { AIConfig } from '../types';
 
 const DEFAULT_AI_CONFIG: AIConfig = {
   provider: 'openrouter',

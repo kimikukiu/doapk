@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { evolutionService } from './evolutionService';
 import { errorService } from './errorService';
-import { sandboxService } from './sandboxService';
+import { sandboxService } from './services/sandboxService';
 
 const PROJECT_ROOT = process.cwd();
 

@@ -1,14 +1,14 @@
-import Database from 'better-sqlite3';
-import path from 'path';
-import fs from 'fs';
+// ============================================================
+// Pure TypeScript Database - Works on Vercel!
+// ============================================================
+// Replaces better-sqlite3 (native module) with pure TypeScript.
+// No native dependencies - works everywhere including Vercel serverless.
+// ============================================================
 
-const DB_PATH = path.join(process.cwd(), 'local_data.db');
+import { Database } from '../services/ts-database';
 
-// Ensure the database file exists
-if (!fs.existsSync(DB_PATH)) {
-  fs.writeFileSync(DB_PATH, '');
-}
-
+// Use pure TS database - works on Vercel!
+const DB_PATH = process.env.DATABASE_PATH || 'local_data.db';
 const db = new Database(DB_PATH);
 
 // Initialize tables
@@ -27,6 +27,8 @@ db.exec(`
   );
 `);
 
+console.log('[DB] ✅ Pure TypeScript database initialized - works on Vercel!');
+
 export const dbService = {
   log: (message: string, level: string = 'info') => {
     const stmt = db.prepare('INSERT INTO logs (message, level) VALUES (?, ?)');
@@ -41,7 +43,7 @@ export const dbService = {
     return stmt.get(query);
   },
   getLogs: (limit: number = 50) => {
-    const stmt = db.prepare('SELECT * FROM logs ORDER BY timestamp DESC LIMIT ?');
+    const stmt = db.prepare(`SELECT * FROM logs ORDER BY timestamp DESC LIMIT ?`);
     return stmt.all(limit);
   }
 };

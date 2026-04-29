@@ -124,6 +124,7 @@ export enum AppTab {
   QUANTUM_INTELLIGENCE = 'QUANTUM_INTELLIGENCE',
   ZXCDDOS = 'ZXCDDOS',
   IDE_TOOL = 'IDE_TOOL',
+  AI_CONFIG = 'AI_CONFIG',
   TV_BROADCAST = 'TV_BROADCAST',
   STS_TELECOM = 'STS_TELECOM',
   GOLIATH_VEHICLES = 'GOLIATH_VEHICLES',
@@ -185,4 +186,29 @@ export interface ThreatFeedItem {
   source: string;
   event: string;
   time: string;
+}
+
+export type AIProvider =
+  | 'openrouter'
+  | 'openai'
+  | 'anthropic'
+  | 'gemini'
+  | 'mistral'
+  | 'llama'
+  | 'deepseek'
+  | 'lisp'
+  | 'milspec';
+
+export interface AIConfig {
+  provider: AIProvider;
+  openrouterKey: string;
+  openaiKey: string;
+  anthropicKey: string;
+  geminiKey: string;
+  mistralKey: string;
+  llamaKey: string;
+  deepseekKey: string;
+  deepseekBaseUrl: string;
+  selectedModel: string;
+  enableGemini: boolean;
 }

@@ -6,7 +6,7 @@ export type AIProvider = 'google' | 'anthropic' | 'groq' | 'openai' | 'deepseek'
 export class AITaskQueue {
   private apiKey: string = "";
   private activeProvider: AIProvider = 'google';
-  private activeModel: string = "gemini-3-flash-preview";
+  private activeModel: string = "gemini-2.0-flash";
 
   constructor(apiKey: string) {
     this.updateApiKey(apiKey);
@@ -16,7 +16,7 @@ export class AITaskQueue {
     this.apiKey = newKey;
     if (newKey.startsWith("AIza")) {
       this.activeProvider = "google";
-      this.activeModel = "gemini-3-flash-preview";
+      this.activeModel = "gemini-2.0-flash";
     } else if (newKey.startsWith("sk-ant")) {
       this.activeProvider = "anthropic";
       this.activeModel = "claude-3-5-sonnet-20241022";
@@ -30,7 +30,7 @@ export class AITaskQueue {
       // Default to google for this app if key is present but prefix is unknown
       // or if key is empty (it will fail anyway, but we want to use the Google SDK)
       this.activeProvider = "google";
-      this.activeModel = "gemini-3-flash-preview";
+      this.activeModel = "gemini-2.0-flash";
     }
     console.log(`[AI CORE] Provider set to: ${this.activeProvider} (${this.activeModel})`);
   }
@@ -85,9 +85,9 @@ export class AITaskQueue {
 
   private async callGoogle(prompt: string): Promise<string> {
     const models = [
-      "gemini-3-flash-preview",
-      "gemini-3.1-pro-preview",
-      "gemini-3.1-flash-lite-preview"
+      "gemini-2.0-flash",
+      "gemini-1.5-pro",
+      "gemini-1.5-flash"
     ];
 
     let lastError = "";

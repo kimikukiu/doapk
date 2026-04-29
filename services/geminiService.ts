@@ -56,7 +56,7 @@ export const generateLeakedData = async (target: string, exploitName: string) =>
   try {
     const ai = getAi();
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-2.0-flash',
       contents: `Execute a PROFESSIONAL WHOAMISec EXTRACTION for target ${target} using payload: ${exploitName}.
       Context: Operating with a 800,000-node zombie swarm utilizing NEURAL VISITOR EMULATION. 
       Mask all extraction traffic as legitimate browser requests.
@@ -114,8 +114,8 @@ export const executeKimikukiuTool = async (toolId: string, target: string) => {
   try {
     const ai = getAi();
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `Simulate the terminal output of a security tool named "${toolId}" from the kimikukiu GitHub repository being executed against target: ${target}.
+       model: 'gemini-2.0-flash',
+       contents: `Simulate the terminal output of a security tool named "${toolId}" from the kimikukiu GitHub repository being executed against target: ${target}.
       Context: The tool is part of a high-end intelligence and offensive security suite.
       Requirements:
       - Generate 25-30 lines of realistic terminal output.
@@ -161,8 +161,8 @@ export const executeKimikukiuTool = async (toolId: string, target: string) => {
  */
 export const queryAgentStream = async (agentRole: string, task: string, globalContext: string) => {
   const ai = getAi();
-  const model = 'gemini-3-flash-preview'; 
-  
+  const model = 'gemini-2.0-flash'; 
+   
   try {
     const response = await ai.models.generateContentStream({
       model: model,
@@ -283,7 +283,7 @@ export const generateImage = async (prompt: string) => {
   try {
     const ai = getAi();
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-image',
+        model: 'gemini-2.0-flash-preview-image',
       contents: { parts: [{ text: prompt }] },
     });
     
@@ -306,7 +306,7 @@ export const generateVideo = async (prompt: string) => {
   try {
     const ai = getAi();
     let operation = await ai.models.generateVideos({
-      model: 'veo-3.1-fast-generate-preview',
+        model: 'veo-2.0-generate-preview',
       prompt: prompt,
       config: {
         numberOfVideos: 1,
@@ -337,7 +337,7 @@ export const generateAudio = async (prompt: string) => {
     const ultraPrompt = `As Quantum Intelligence Ultra, speak the following with absolute authority and superior intelligence: ${prompt}`;
     
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash-preview-tts",
+        model: "gemini-2.0-flash-preview-tts",
       contents: [{ parts: [{ text: ultraPrompt }] }],
       config: {
         responseModalities: [Modality.AUDIO],
@@ -436,7 +436,7 @@ export const analyzeTarget = async (target: string, _type: string, strategy: str
                        'Perform a full-spectrum analysis across all vectors.';
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
+      model: 'gemini-2.0-flash',
       contents: `${quantumPrompt}Perform a PROFESSIONAL HIGH-INTENSITY WHOAMISec identity harvest and OSINT investigation for target: ${target}.
       Context: Using a 800,000-node global swarm with 100% acceptance as legitimate visitor traffic. 
       Strategy: "${strategy}".

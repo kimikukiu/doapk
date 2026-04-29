@@ -13,6 +13,7 @@ import SqlInject from './components/SqlInject';
 import BotnetCore from './components/BotnetCore';
 import Settings from './components/Settings';
 import QuantumIntelligenceUltra from './components/QuantumIntelligence';
+import ApiConfigPanel from './components/ApiConfigPanel';
 import { AppTab, LogEntry, OSINTResult, ThreatFeedItem, NetworkConfig } from './types';
 import { analyzeTarget } from './services/geminiService';
 
@@ -587,6 +588,20 @@ const MainApp: React.FC = () => {
                    </div>
                 </div>
              </div>
+          </div>
+        )}
+
+        {activeTab === AppTab.AI_CONFIG && (
+          <div className="space-y-4 animate-in">
+            <div className="bg-[#050505] border border-white/5 p-4 rounded-lg">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-[8px] font-black text-emerald-500 uppercase tracking-[0.3em]">API Manager</h3>
+                <div className="text-[7px] text-gray-600 font-black uppercase tracking-widest">
+                  Client-side keys saved in local storage
+                </div>
+              </div>
+              <ApiConfigPanel />
+            </div>
           </div>
         )}
 

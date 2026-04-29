@@ -20,6 +20,35 @@ interface AttackLog {
   bots: number;
 }
 
+interface SubscriptionToken {
+  id: string;
+  token: string;
+  plan: 'free' | 'basic' | 'vip' | 'premium';
+  createdAt: string;
+  expiresAt: string;
+  used: boolean;
+  usedBy?: string;
+}
+
+const PRICING_PLANS = [
+  { plan: 'free', name: 'FREE DEMO', price: '0', duration: '24h', features: ['1 attack/day', '60s max', '5 bots'], color: 'gray' },
+  { plan: 'basic', name: 'BASIC', price: '15', duration: '7 days', features: ['5 attacks/day', '120s max', '50 bots', 'Telegram access'], color: 'blue' },
+  { plan: 'vip', name: 'VIP', price: '35', duration: '30 days', features: ['Unlimited attacks', '300s max', '200 bots', 'Priority support', 'API access'], color: 'purple' },
+  { plan: 'premium', name: 'PREMIUM', price: '75', duration: '30 days', features: ['Unlimited', '600s max', 'Unlimited bots', 'All methods', 'Dedicated server'], color: 'emerald' },
+];
+
+const MONERO_WALLET = '44AFFq5kSiGBoZ4NMDwYtN18yncF3oM7ViR';
+
+function generateToken(): string {
+  return 'WHOAMI-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+}
+
+function addDays(days: number): string {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  return date.toISOString();
+}
+
 const FAKE_BOTS: Bot[] = [
   { id: 'BOT-001', ip: '192.168.1.x', country: 'US', status: 'ONLINE', arch: 'x86_64', uptime: '12d 4h' },
   { id: 'BOT-002', ip: '10.0.0.x', country: 'DE', status: 'ONLINE', arch: 'ARM', uptime: '3d 18h' },
@@ -158,7 +187,13 @@ const BotnetC2Panel: React.FC = () => {
   const [tgToken, setTgToken] = useState(() => localStorage.getItem('botnet_tg_token') || '');
   const [tgChatId, setTgChatId] = useState(() => localStorage.getItem('botnet_tg_chatid') || '');
   const [tgStatus, setTgStatus] = useState<'idle' | 'testing' | 'ok' | 'fail'>('idle');
-  const [view, setView] = useState<'terminal' | 'bots' | 'attacks' | 'methods' | 'mirai' | 'premium' | 'infra'>('terminal');
+  const [view, setView] = useState<'terminal' | 'bots' | 'attacks' | 'methods' | 'mirai' | 'premium' | 'infra' | 'subscriptions'>('terminal');
+  const [tokens, setTokens] = useState<SubscriptionToken[]>(() => {
+    const saved = localStorage.getItem('botnet_tokens');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [newTokenPlan, setNewTokenPlan] = useState<'free' | 'basic' | 'vip' | 'premium'>('free');
+  const [newTokenDuration, setNewTokenDuration] = useState('1');
   const [selectedMethod, setSelectedMethod] = useState<{ cmd: string; name: string } | null>(null);
   const termRef = useRef<HTMLDivElement>(null);
   const activeTimers = useRef<Map<string, { interval: ReturnType<typeof setInterval>; timeout: ReturnType<typeof setTimeout>; startTime: number; duration: number }>>(new Map());
@@ -424,7 +459,7 @@ const BotnetC2Panel: React.FC = () => {
 
       {/* View Tabs */}
       <div className="flex gap-1 flex-wrap">
-        {([['terminal','fa-terminal'],['methods','fa-crosshairs'],['mirai','fa-bug'],['premium','fa-crown'],['infra','fa-server'],['bots','fa-robot'],['attacks','fa-fire']] as const).map(([v, icon]) => (
+        {([['terminal','fa-terminal'],['methods','fa-crosshairs'],['mirai','fa-bug'],['premium','fa-crown'],['infra','fa-server'],['bots','fa-robot'],['attacks','fa-fire'],['subscriptions','fa-ticket']] as const).map(([v, icon]) => (
           <button key={v} onClick={() => setView(v as any)}
             className={`px-2.5 py-1.5 rounded text-[7px] font-black uppercase transition-all ${view === v ? 'bg-red-600 text-white' : 'bg-black border border-red-900/30 text-red-400 hover:bg-red-900/20'}`}>
             <i className={`fas ${icon} mr-1`}></i>{v}
@@ -794,6 +829,190 @@ const BotnetC2Panel: React.FC = () => {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* SUBSCRIPTIONS VIEW - CYBERPUNK UI */}
+      {view === 'subscriptions' && (
+        <div className="relative space-y-4 animate-in fade-in duration-500">
+          {/* Animated Cyberpunk Background */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none -z-10">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/30 via-black/80 to-black/60"></div>
+            {/* Floating Neural Membranes */}
+            <div className="absolute top-1/4 left-1/4 w-32 h-32 border border-cyan-500/20 rounded-full animate-pulse" style={{animationDuration: '3s', animationDelay: '0s'}}></div>
+            <div className="absolute top-1/3 right-1/4 w-40 h-40 border border-purple-500/20 rounded-full animate-pulse" style={{animationDuration: '4s', animationDelay: '1s'}}></div>
+            <div className="absolute bottom-1/4 left-1/3 w-24 h-24 border border-pink-500/20 rounded-full animate-pulse" style={{animationDuration: '3.5s', animationDelay: '0.5s'}}></div>
+            <div className="absolute top-1/2 right-1/3 w-16 h-16 border border-emerald-500/20 rounded-full animate-pulse" style={{animationDuration: '2.5s', animationDelay: '2s'}}></div>
+            {/* Scanning Lines */}
+            <div className="absolute inset-0 overflow-hidden">
+              <div className="absolute w-full h-0.5 bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent animate-[scan_4s_ease-in-out_infinite]" style={{top: '20%'}}></div>
+              <div className="absolute w-full h-0.5 bg-gradient-to-r from-transparent via-purple-500/30 to-transparent animate-[scan_5s_ease-in-out_infinite]" style={{top: '60%'}}></div>
+              <div className="absolute w-full h-0.5 bg-gradient-to-r from-transparent via-pink-500/30 to-transparent animate-[scan_3s_ease-in-out_infinite]" style={{top: '80%'}}></div>
+            </div>
+            {/* Neural Network Dots */}
+            {[...Array(12)].map((_, i) => (
+              <div key={i} className="absolute w-1 h-1 bg-cyan-400/40 rounded-full animate-pulse" style={{left: `${10 + Math.random() * 80}%`, top: `${10 + Math.random() * 80}%`, animationDelay: `${Math.random() * 2}s`}}></div>
+            ))}
+            {/* Floating Data Streams */}
+            <div className="absolute top-0 right-10 w-1 h-32 bg-gradient-to-b from-transparent via-cyan-500/30 to-transparent animate-pulse" style={{animationDuration: '2s'}}></div>
+            <div className="absolute top-20 left-10 w-0.5 h-48 bg-gradient-to-b from-transparent via-purple-500/20 to-transparent animate-pulse" style={{animationDuration: '3s', animationDelay: '1s'}}></div>
+            <div className="absolute bottom-10 right-1/4 w-0.5 h-40 bg-gradient-to-b from-transparent via-pink-500/20 to-transparent animate-pulse" style={{animationDuration: '2.5s', animationDelay: '0.5s'}}></div>
+          </div>
+
+          {/* Hero Banner */}
+          <div className="relative bg-gradient-to-r from-purple-900/40 via-black to-cyan-900/40 border border-purple-500/30 rounded-lg p-4 overflow-hidden">
+            <div className="absolute inset-0 opacity-20">
+              <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent,rgba(120,0,255,0.3),transparent)] animate-pulse" style={{backgroundSize: '200% 100%', animation: 'shimmer 2s infinite'}}></div>
+            </div>
+            <div className="relative z-10 flex items-center justify-between">
+              <div>
+                <h2 className="text-[14px] font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400 uppercase tracking-wider animate-pulse">WHOAMISEC <span className="text-white">NEURAL NETWORK</span></h2>
+                <p className="text-[8px] text-gray-400 mt-1">◆ Access premium attack infrastructure ◆ Autonomous botnet AI ◆ Quantum-resistant encryption ◆</p>
+              </div>
+              <div className="text-right">
+                <div className="text-[20px] font-black text-cyan-400 drop-shadow-[0_0_10px_rgba(34,211,238,0.8)]">∞</div>
+                <div className="text-[6px] text-purple-400 uppercase tracking-widest">Unlimited Power</div>
+              </div>
+            </div>
+            <div className="mt-2 h-0.5 bg-gradient-to-r from-transparent via-cyan-500 to-transparent animate-pulse"></div>
+          </div>
+
+          {/* Pricing Plans - Cyberpunk Cards */}
+          <div className="bg-black/60 backdrop-blur-sm border border-emerald-900/30 rounded-lg p-3">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-[9px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-2">
+                <i className="fas fa-microchip animate-spin-slow"></i>
+                <span className="relative">
+                  <span className="relative z-10">Subscription Plans</span>
+                  <span className="absolute inset-0 bg-emerald-500/20 blur-sm"></span>
+                </span>
+              </h3>
+              <span className="text-[6px] text-gray-500 flex items-center gap-1"><i className="fab fa-monero text-yellow-500"></i> Payment in XMR</span>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {PRICING_PLANS.map((p, idx) => (
+                <div key={p.plan} className={`relative group bg-black border rounded-lg p-3 transition-all duration-300 hover:scale-105 hover:shadow-[0_0_20px_rgba(0,255,255,0.3)] ${p.color === 'emerald' ? 'border-emerald-500/50 hover:border-emerald-400' : p.color === 'purple' ? 'border-purple-500/50 hover:border-purple-400' : p.color === 'blue' ? 'border-blue-500/50 hover:border-blue-400' : 'border-gray-700 hover:border-gray-500'}`}>
+                  <div className="absolute top-0 right-0 w-0 h-0 border-t-[20px] border-t-transparent border-r-[20px] border-r-current opacity-50" style={{borderRightColor: p.color === 'emerald' ? '#10b981' : p.color === 'purple' ? '#a855f7' : p.color === 'blue' ? '#3b82f6' : '#6b7280'}}></div>
+                  {idx === 3 && <div className="absolute -top-1 left-1/2 -translate-x-1/2 text-[5px] bg-gradient-to-r from-emerald-500 to-cyan-500 text-black px-2 py-0.5 rounded font-black uppercase animate-pulse">BEST</div>}
+                  <div className={`text-[10px] font-black uppercase mb-2 ${p.color === 'emerald' ? 'text-emerald-400' : p.color === 'purple' ? 'text-purple-400' : p.color === 'blue' ? 'text-blue-400' : 'text-gray-400'}`}>{p.name}</div>
+                  <div className="text-[16px] font-black text-white mb-0.5 drop-shadow-lg">{p.price === '0' ? 'FREE' : `${p.price} XMR`}</div>
+                  <div className="text-[7px] text-gray-500 mb-3">{p.duration}</div>
+                  <div className="text-[6px] text-gray-600 space-y-1">
+                    {p.features.map((f, i) => <div key={i} className="flex items-center gap-1"><i className={`fas fa-chevron-right text-[5px] ${p.color === 'emerald' ? 'text-emerald-500' : p.color === 'purple' ? 'text-purple-500' : p.color === 'blue' ? 'text-blue-500' : 'text-gray-500'}`}></i>{f}</div>)}
+                  </div>
+                  <button className={`mt-3 w-full py-1.5 text-[7px] font-black uppercase rounded transition-all opacity-0 group-hover:opacity-100 ${p.color === 'emerald' ? 'bg-emerald-600 hover:bg-emerald-500 text-black' : p.color === 'purple' ? 'bg-purple-600 hover:bg-purple-500 text-white' : p.color === 'blue' ? 'bg-blue-600 hover:bg-blue-500 text-white' : 'bg-gray-600 hover:bg-gray-500 text-white'}`}>
+                    <i className="fas fa-bolt mr-1"></i>Select Plan
+                  </button>
+                </div>
+              ))}
+            </div>
+            {/* Payment Info */}
+            <div className="mt-4 p-3 bg-gradient-to-r from-yellow-900/20 via-orange-900/10 to-yellow-900/20 border border-yellow-500/30 rounded-lg relative overflow-hidden">
+              <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPHRyYW5zZm9ybSB0cmFuc2xhdGU9IjAiIHJvdGF0ZT0iNCI+PHBhdGggZD0iTS0yIDBoNHYtNEgweiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuMSkiIHN0cm9rZS13aWR0aD0iMSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNncmlkKSIvPjwvc3ZnPg==')] opacity-30"></div>
+              <div className="relative z-10 flex items-center gap-4">
+                <div className="flex-1">
+                  <div className="text-[8px] text-yellow-400 font-bold uppercase mb-1 flex items-center gap-2"><i className="fas fa-wallet"></i>Monero Payment Address:</div>
+                  <div className="text-[9px] text-yellow-200 font-mono select-all bg-black/30 p-1.5 rounded border border-yellow-500/20">{MONERO_WALLET}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[6px] text-gray-500 uppercase">Scan to Pay</div>
+                  <div className="w-12 h-12 bg-white rounded flex items-center justify-center"><i className="fas fa-qrcode text-black text-xl"></i></div>
+                </div>
+              </div>
+              <div className="mt-2 text-[6px] text-gray-500 text-center">◆ Send exact amount. Contact @admin after payment for token activation ◆</div>
+            </div>
+          </div>
+
+          {/* Token Generator - Neural Style */}
+          <div className="bg-black/60 backdrop-blur-sm border border-cyan-900/30 rounded-lg p-3 relative overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-500/5 via-transparent to-transparent"></div>
+            <h3 className="text-[9px] font-black text-cyan-400 uppercase tracking-widest mb-3 flex items-center gap-2 relative z-10">
+              <i className="fas fa-brain animate-pulse"></i> Neural Token Generator
+            </h3>
+            <div className="flex gap-2 mb-3 relative z-10">
+              <div className="flex-1">
+                <label className="text-[7px] text-cyan-400 font-black uppercase block mb-1 flex items-center gap-1"><i className="fas fa-layer-group text-[8px]"></i>Plan Model</label>
+                <select value={newTokenPlan} onChange={e => setNewTokenPlan(e.target.value as any)} className="w-full bg-black border border-cyan-900/50 rounded px-2 py-1.5 text-[8px] text-white focus:border-cyan-500 focus:shadow-[0_0_10px_rgba(6,182,212,0.3)] outline-none transition-all">
+                  {PRICING_PLANS.map(p => <option key={p.plan} value={p.plan}>{p.name} - {p.duration}</option>)}
+                </select>
+              </div>
+              <div className="w-28">
+                <label className="text-[7px] text-cyan-400 font-black uppercase block mb-1 flex items-center gap-1"><i className="fas fa-clock text-[8px]"></i>Duration</label>
+                <div className="flex items-center gap-1">
+                  <input type="range" value={newTokenDuration} onChange={e => setNewTokenDuration(e.target.value)} min="1" max="90" className="flex-1 h-1 bg-cyan-900/50 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-cyan-400 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer" />
+                  <input type="number" value={newTokenDuration} onChange={e => setNewTokenDuration(e.target.value)} min="1" max="365" className="w-14 bg-black border border-cyan-900/50 rounded px-1 py-1 text-[8px] text-center text-cyan-400 font-bold" />
+                </div>
+              </div>
+              <div className="flex items-end">
+                <button onClick={() => {
+                  const newToken: SubscriptionToken = {
+                    id: Date.now().toString(),
+                    token: generateToken(),
+                    plan: newTokenPlan,
+                    createdAt: new Date().toISOString(),
+                    expiresAt: addDays(parseInt(newTokenDuration) || 1),
+                    used: false
+                  };
+                  setTokens(prev => { const updated = [...prev, newToken]; localStorage.setItem('botnet_tokens', JSON.stringify(updated)); return updated; });
+                  log(`⚡ NEURAL TOKEN GENERATED: ${newToken.token} [${newTokenPlan.toUpperCase()}]`);
+                }} className="px-4 py-1.5 bg-gradient-to-r from-cyan-600 to-blue-600 border border-cyan-400 text-white text-[7px] font-black uppercase rounded hover:shadow-[0_0_20px_rgba(6,182,212,0.5)] transition-all animate-pulse">
+                  <i className="fas fa-bolt mr-1"></i>Generate
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Token List - Holographic */}
+          <div className="bg-black/60 backdrop-blur-sm border border-purple-900/30 rounded-lg p-3 relative overflow-hidden">
+            <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(168,85,247,0.05))]"></div>
+            <h3 className="text-[9px] font-black text-purple-400 uppercase tracking-widest mb-3 flex items-center gap-2 relative z-10">
+              <i className="fas fa-network-wired animate-pulse"></i> Active Neural Keys ({tokens.length})
+            </h3>
+            <div className="space-y-1 max-h-40 overflow-y-auto custom-scroll relative z-10">
+              {tokens.length === 0 && <div className="text-[7px] text-gray-600 flex items-center gap-2"><i className="fas fa-circle-notch fa-spin text-gray-500"></i>No neural keys generated. Initialize generator above.</div>}
+              {tokens.map((t, i) => {
+                const isExpired = new Date(t.expiresAt) < new Date();
+                return (
+                  <div key={t.id} className={`flex items-center justify-between p-2 bg-black/60 border rounded transition-all hover:bg-black/80 hover:scale-[1.01] ${t.used ? 'border-gray-700 opacity-60' : isExpired ? 'border-red-900/50' : 'border-purple-500/30'}`}>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-6 h-6 rounded flex items-center justify-center ${t.used ? 'bg-gray-800' : isExpired ? 'bg-red-900/30' : 'bg-purple-900/30'} border ${t.used ? 'border-gray-600' : isExpired ? 'border-red-500/50' : 'border-purple-500/50'}`}>
+                        <i className={`fas ${t.used ? 'fa-check' : isExpired ? 'fa-exclamation-triangle' : 'fa-key'} text-[8px] ${t.used ? 'text-gray-500' : isExpired ? 'text-red-500' : 'text-purple-400'}`}></i>
+                      </div>
+                      <div>
+                        <div className="text-[9px] font-mono text-white tracking-wider">{t.token}</div>
+                        <div className="text-[6px] text-gray-500 flex items-center gap-2">
+                          <span className={`px-1 rounded ${t.plan === 'premium' ? 'bg-emerald-900/30 text-emerald-400' : t.plan === 'vip' ? 'bg-purple-900/30 text-purple-400' : t.plan === 'basic' ? 'bg-blue-900/30 text-blue-400' : 'bg-gray-700 text-gray-400'}`}>{t.plan.toUpperCase()}</span>
+                          <span>◆</span>
+                          <span>{new Date(t.expiresAt).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className={`w-2 h-2 rounded-full ${t.used ? 'bg-gray-500' : isExpired ? 'bg-red-500 animate-pulse' : 'bg-green-500 animate-pulse'}`}></div>
+                      {t.used ? <span className="text-[6px] text-gray-500">USED</span> : isExpired ? <span className="text-[6px] text-red-400">EXPIRED</span> : <span className="text-[6px] text-green-400">ACTIVE</span>}
+                      <button onClick={() => { setTokens(prev => { const updated = prev.filter(x => x.id !== t.id); localStorage.setItem('botnet_tokens', JSON.stringify(updated)); return updated; }); log('Neural key purged from memory'); }} className="text-[7px] text-red-500 hover:text-red-400 px-1 hover:bg-red-900/20 rounded transition-all"><i className="fas fa-times"></i></button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Stats Banner */}
+          <div className="grid grid-cols-3 gap-2 bg-black/40 backdrop-blur-sm rounded-lg p-2">
+            <div className="bg-black border border-cyan-500/20 rounded p-2 text-center">
+              <div className="text-[14px] font-black text-cyan-400">{tokens.filter(t => !t.used && new Date(t.expiresAt) > new Date()).length}</div>
+              <div className="text-[5px] text-gray-500 uppercase">Active Keys</div>
+            </div>
+            <div className="bg-black border border-purple-500/20 rounded p-2 text-center">
+              <div className="text-[14px] font-black text-purple-400">{PRICING_PLANS.length}</div>
+              <div className="text-[5px] text-gray-500 uppercase">Plans Available</div>
+            </div>
+            <div className="bg-black border border-emerald-500/20 rounded p-2 text-center">
+              <div className="text-[14px] font-black text-emerald-400">24/7</div>
+              <div className="text-[5px] text-gray-500 uppercase">Neural Uptime</div>
+            </div>
           </div>
         </div>
       )}

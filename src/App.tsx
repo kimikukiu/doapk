@@ -28,6 +28,7 @@ import BlackhatTool from './components/tools/BlackhatTool';
 import LazarusTool from './components/tools/LazarusTool';
 import BurpSuiteTool from './components/tools/BurpSuiteTool';
 import OwaspTool from './components/tools/OwaspTool';
+import Presentation from '../components/Presentation';
 import { ZxCDDoS } from './components/tools/ZxCDDoS';
 import QuantumCoderTool from './components/tools/QuantumCoderTool';
 import { TV_BROADCAST_TAKEOVER, STS_TELECOM_TAKEOVER, GOLIATH_VEHICLES, AIRPORT_CONTROL, METRO_TRAINS, BIOMETRIC_RECON, GLOBAL_SCADA_INFRASTRUCTURE, SS7_SIGNALS, GLOBAL_AEROSPACE_NAVAL, STARLINK_PALANTIR_CONTROL, MILITARY_JETS_CONTROL, GLOBAL_BANKING_CRYPTO, POLICE_RADIO_CONTROL, SPACEX_CONTROL, PROMIS_CONTROL, LISP_AI_CONTROL } from './services/elderPliniusKnowledgeBase';
@@ -1858,6 +1859,8 @@ const App: React.FC = () => {
   return (
     <Routes>
       <Route path="/" element={<MainApp />} />
+      <Route path="/presentation" element={<Presentation />} />
+      <Route path="/demo" element={<Presentation />} />
       <Route path="/gpt-tool" element={<GptTool />} />
       <Route path="/ide-tool" element={<IdeTool />} />
       <Route path="/solana-tool" element={<SolanaTool />} />

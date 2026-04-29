@@ -61,11 +61,11 @@ const STRATEGIES = {
   ]
 };
 
+import { hashPassword, ADMIN_PASSWORD_HASH } from './utils/crypto';
+
 const MainApp: React.FC = () => {
   const [isAdmin, setIsAdmin] = useLocalStorage('app_isAdmin', false);
   const [authInput, setAuthInput] = useState('');
-  
-  import { hashPassword, ADMIN_PASSWORD_HASH } from './utils/crypto';
 
   const handleAuth = () => {
     const inputHash = hashPassword(authInput);

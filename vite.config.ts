@@ -5,6 +5,11 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   base: '/',
   plugins: [react(), tailwindcss()],
+  build: {
+    rollupOptions: {
+      input: './index.html'
+    }
+  },
   define: {
     'process.env.GEMINI_API_KEY': JSON.stringify(process.env.GEMINI_API_KEY),
   },

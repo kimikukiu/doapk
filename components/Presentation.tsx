@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 
+// v2.1 - deployment fix
 const PROJECT_FEATURES = [
   { icon: 'fa-search', title: 'OSINT RECON', desc: 'Advanced Open Source Intelligence gathering with multi-source aggregation', color: 'cyan' },
   { icon: 'fa-database', title: 'SQL INJECTION', desc: 'Neural-powered SQL injection detection and exploitation frameworks', color: 'red' },

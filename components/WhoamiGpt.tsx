@@ -243,14 +243,18 @@ const WhoamiGpt: React.FC<WhoamiGptProps> = ({ addLog, onMinimize, openTerminal,
       const currentAiConfig = getAIConfig();
       const localKey = openRouterApiKey || activeHarvestedKey || localStorage.getItem('openrouter_api_key') || '';
       if (localKey) {
-        // Always force OpenRouter provider when we have a key — Quantum Intelligence runs on OpenRouter
-        if (currentAiConfig.provider !== 'openrouter' || currentAiConfig.openrouterKey !== localKey) {
-          logBoth(`[QUANTUM_INTELLIGENCE] Syncing OpenRouter API key...`, 'info');
+        // Check if it's OpenAI key (starts with sk-) or OpenRouter
+        const isOpenAIKey = localKey.startsWith('sk-');
+        const provider = isOpenAIKey ? 'openai' : 'openrouter';
+        
+        if (currentAiConfig.provider !== provider || (isOpenAIKey ? currentAiConfig.openaiKey : currentAiConfig.openrouterKey) !== localKey) {
+          logBoth(`[QUANTUM_INTELLIGENCE] Syncing ${isOpenAIKey ? 'OpenAI' : 'OpenRouter'} API key...`, 'info');
           setAIConfig({
             ...currentAiConfig,
-            provider: 'openrouter',
-            openrouterKey: localKey,
-            selectedModel: selectedModel || currentAiConfig.selectedModel || 'nousresearch/hermes-3-llama-3.1-405b',
+            provider: provider,
+            openaiKey: isOpenAIKey ? localKey : '',
+            openrouterKey: isOpenAIKey ? '' : localKey,
+            selectedModel: isOpenAIKey ? 'gpt-4o' : (selectedModel || currentAiConfig.selectedModel || 'openai/gpt-4o'),
           });
         }
       }

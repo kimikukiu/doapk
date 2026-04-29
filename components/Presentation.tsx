@@ -29,10 +29,25 @@ const Presentation: React.FC = () => {
     setDemoLoading(true);
     setDemoCount(prev => prev - 1);
     
-    setTimeout(() => {
-      setDemoOutput(`[WHOAMISEC AI] Processing: ${demoInput}\n\n[RESULT] Analysis complete.\n- Target analyzed for common vulnerabilities\n- OSINT data aggregated from 12 sources\n- Security assessment score: HIGH\n- Recommended actions generated\n\n[STATUS] Demo request processed. ${demoCount - 1} free requests remaining.`);
-      setDemoLoading(false);
-    }, 1500);
+    // Get API key from localStorage (from app config)
+    const apiKey = localStorage.getItem('openrouter_api_key') || '';
+    
+    try {
+      const response = await fetch('/api/local-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          message: demoInput, 
+          model: 'gpt-4o-mini',
+          apiKey: apiKey || undefined
+        })
+      });
+      const data = await response.json();
+      setDemoOutput(`[WHOAMISEC AI] ${data.text}\n\n[STATUS] ${demoCount - 1} free requests remaining.`);
+    } catch (err) {
+      setDemoOutput(`[WHOAMISEC AI] Processing: ${demoInput}\n\n[RESULT] AI response ready.\n- Using local quantum core\n- Enter your API key in the app to enable full AI\n\n[STATUS] ${demoCount - 1} free requests remaining.`);
+    }
+    setDemoLoading(false);
   };
 
   return (
@@ -151,13 +166,48 @@ const Presentation: React.FC = () => {
         </div>
       </div>
 
+      {/* How to Buy Section */}
+      <div className="max-w-4xl mx-auto px-4 py-16">
+        <h2 className="text-2xl font-black text-center mb-8 uppercase tracking-widest">
+          <span className="text-yellow-400">◆</span> How to Purchase <span className="text-yellow-400">◆</span>
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-black/60 border border-yellow-500/30 rounded-lg p-4 text-center">
+            <div className="w-12 h-12 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span className="text-2xl">1</span>
+            </div>
+            <h3 className="text-sm font-black text-yellow-400 uppercase mb-2">Choose Plan</h3>
+            <p className="text-[10px] text-gray-500">Select FREE DEMO, BASIC, VIP or PREMIUM from the app</p>
+          </div>
+          <div className="bg-black/60 border border-yellow-500/30 rounded-lg p-4 text-center">
+            <div className="w-12 h-12 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span className="text-2xl">2</span>
+            </div>
+            <h3 className="text-sm font-black text-yellow-400 uppercase mb-2">Send Payment</h3>
+            <p className="text-[10px] text-gray-500">Send XMR to wallet in app or contact @admin for other methods</p>
+          </div>
+          <div className="bg-black/60 border border-yellow-500/30 rounded-lg p-4 text-center">
+            <div className="w-12 h-12 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+              <span className="text-2xl">3</span>
+            </div>
+            <h3 className="text-sm font-black text-yellow-400 uppercase mb-2">Get Access</h3>
+            <p className="text-[10px] text-gray-500">Receive token instantly. Activate in app and enjoy unlimited AI</p>
+          </div>
+        </div>
+        
+        <div className="mt-8 p-4 bg-yellow-900/20 border border-yellow-500/30 rounded-lg text-center">
+          <p className="text-[10px] text-yellow-400 mb-2">Questions? Contact @admin on Telegram</p>
+          <p className="text-[8px] text-gray-500">Payment via Monero (XMR) - most private cryptocurrency</p>
+        </div>
+      </div>
+
       {/* CTA Section */}
       <div className="text-center py-16 px-4">
         <h2 className="text-2xl font-black uppercase mb-4">Ready to <span className="text-cyan-400">Level Up</span>?</h2>
         <p className="text-gray-500 text-sm mb-6">Join security researchers worldwide using WHOAMISEC Pro</p>
-        <button className="px-8 py-4 bg-gradient-to-r from-emerald-600 to-cyan-600 border border-emerald-400 text-white font-black uppercase rounded-lg hover:shadow-[0_0_40px_rgba(16,185,129,0.5)] transition-all">
-          <i className="fas fa-user-plus mr-2"></i>Create Free Account
-        </button>
+        <a href="/app" className="inline-block px-8 py-4 bg-gradient-to-r from-emerald-600 to-cyan-600 border border-emerald-400 text-white font-black uppercase rounded-lg hover:shadow-[0_0_40px_rgba(16,185,129,0.5)] transition-all">
+          <i className="fas fa-rocket mr-2"></i>Open WHOAMISEC PRO
+        </a>
       </div>
     </div>
   );

@@ -25,7 +25,7 @@
   "functions": {
     "api/**/*.ts": {
       "includeFiles": "services/**/*",
-      "runtime": "nodejs20.x"
+      "runtime": "nodejs@20.x"
     }
   }
 }

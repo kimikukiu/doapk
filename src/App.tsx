@@ -1858,9 +1858,10 @@ const ResultPane = ({ title, icon, items, color }: { title: string, icon: string
 const App: React.FC = () => {
   return (
     <Routes>
-      <Route path="/" element={<MainApp />} />
+      <Route path="/" element={<Presentation />} />
       <Route path="/presentation" element={<Presentation />} />
       <Route path="/demo" element={<Presentation />} />
+      <Route path="/app" element={<MainApp />} />
       <Route path="/gpt-tool" element={<GptTool />} />
       <Route path="/ide-tool" element={<IdeTool />} />
       <Route path="/solana-tool" element={<SolanaTool />} />

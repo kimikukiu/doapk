@@ -84,38 +84,38 @@ const Presentation: React.FC = () => {
         <div className="absolute inset-0 bg-[linear-gradient(rgba(0,255,195,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,195,0.03)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
       </div>
 
-      {/* Hero Section */}
-      <div className="relative h-[60vh] flex items-center justify-center overflow-hidden pt-20">
-        <div className="relative z-10 text-center px-4">
-          <h1 className="text-4xl md:text-6xl font-black uppercase tracking-wider mb-4">
+      {/* Hero Section - Mobile Responsive */}
+      <div className="relative min-h-[70vh] md:h-[60vh] flex items-center justify-center overflow-hidden pt-16 md:pt-20">
+        <div className="relative z-10 text-center px-4 w-full">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-black uppercase tracking-wider mb-2 md:mb-4 px-2">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500">WHOAMISEC</span>
             <span className="text-white"> PRO</span>
           </h1>
-          <p className="text-sm md:text-lg text-gray-400 mb-8 tracking-widest">AUTONOMOUS SECURITY INTELLIGENCE SUITE</p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <button className="px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 border border-cyan-400 text-white font-black uppercase rounded hover:shadow-[0_0_30px_rgba(6,182,212,0.5)] transition-all">
+          <p className="text-xs sm:text-sm md:text-lg text-gray-400 mb-6 md:mb-8 tracking-widest px-2">AUTONOMOUS SECURITY INTELLIGENCE SUITE</p>
+          <div className="flex flex-col sm:flex-row justify-center gap-3 md:gap-4 px-4">
+            <button className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 border border-cyan-400 text-white font-black uppercase rounded text-sm md:text-base hover:shadow-[0_0_30px_rgba(6,182,212,0.5)] transition-all">
               <i className="fas fa-rocket mr-2"></i>Get Started
             </button>
-            <button className="px-6 py-3 bg-black border border-gray-700 text-gray-400 font-black uppercase rounded hover:border-gray-500 transition-all">
-              <i className="fas fa-play mr-2"></i>Watch Demo
+            <button className="w-full sm:w-auto px-6 py-3 bg-black border border-gray-700 text-gray-400 font-black uppercase rounded text-sm md:text-base hover:border-gray-500 transition-all">
+              <i className="fas fa-play mr-2"></i>Demo
             </button>
           </div>
         </div>
       </div>
 
-      {/* Features Grid */}
-      <div className="max-w-6xl mx-auto px-4 py-16">
-        <h2 className="text-2xl font-black text-center mb-12 uppercase tracking-widest">
+      {/* Features Grid - Mobile Responsive */}
+      <div className="max-w-6xl mx-auto px-3 md:px-4 py-8 md:py-16">
+        <h2 className="text-lg md:text-2xl font-black text-center mb-6 md:mb-12 uppercase tracking-widest">
           <span className="text-emerald-400">◆</span> Core Capabilities <span className="text-emerald-400">◆</span>
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4">
           {PROJECT_FEATURES.map((f, i) => (
-            <div key={i} className="bg-black/60 border border-gray-800 rounded-lg p-4 hover:border-cyan-500/50 hover:shadow-[0_0_20px_rgba(6,182,212,0.2)] transition-all group">
-              <div className={`w-10 h-10 rounded-lg bg-${f.color}-900/20 border border-${f.color}-500/30 flex items-center justify-center mb-3 group-hover:scale-110 transition-all`}>
-                <i className={`fas ${f.icon} text-${f.color}-400 text-lg`}></i>
+            <div key={i} className="bg-black/60 border border-gray-800 rounded-lg p-2 md:p-4 hover:border-cyan-500/50 hover:shadow-[0_0_20px_rgba(6,182,212,0.2)] transition-all group">
+              <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg bg-${f.color}-900/20 border border-${f.color}-500/30 flex items-center justify-center mb-2 md:mb-3 group-hover:scale-110 transition-all`}>
+                <i className={`fas ${f.icon} text-${f.color}-400 text-sm md:text-lg`}></i>
               </div>
-              <h3 className={`text-sm font-black uppercase text-${f.color}-400 mb-1`}>{f.title}</h3>
-              <p className="text-[10px] text-gray-500">{f.desc}</p>
+              <h3 className={`text-[10px] md:text-sm font-black uppercase text-${f.color}-400 mb-1`}>{f.title}</h3>
+              <p className="text-[8px] md:text-[10px] text-gray-500 leading-tight">{f.desc}</p>
             </div>
           ))}
         </div>
@@ -214,18 +214,18 @@ const Presentation: React.FC = () => {
         </a>
       </div>
 
-      {/* Admin Login Balloon - Draggable, 40% opacity */}
+      {/* Admin Login Balloon - Mobile responsive, 40% opacity */}
       <div 
         className="fixed z-50 cursor-move select-none"
         style={{ 
-          left: `${balloonPos.x}px`, 
-          top: `${balloonPos.y}px`,
+          left: `${balloonPos.x || 16}px`, 
+          top: `${balloonPos.y || (typeof window !== 'undefined' ? window.innerHeight - 100 : 500)}px`,
           opacity: 0.4,
           transition: isDragging ? 'none' : 'opacity 0.3s'
         }}
         onMouseDown={(e) => {
           setIsDragging(true);
-          setDragOffset({ x: e.clientX - balloonPos.x, y: e.clientY - balloonPos.y });
+          setDragOffset({ x: e.clientX - (balloonPos.x || 16), y: e.clientY - (balloonPos.y || 500) });
         }}
         onMouseMove={(e) => {
           if (isDragging) {
@@ -234,12 +234,24 @@ const Presentation: React.FC = () => {
         }}
         onMouseUp={() => setIsDragging(false)}
         onMouseLeave={() => setIsDragging(false)}
+        onTouchStart={(e) => {
+          setIsDragging(true);
+          const touch = e.touches[0];
+          setDragOffset({ x: touch.clientX - (balloonPos.x || 16), y: touch.clientY - (balloonPos.y || 500) });
+        }}
+        onTouchMove={(e) => {
+          if (isDragging) {
+            const touch = e.touches[0];
+            setBalloonPos({ x: touch.clientX - dragOffset.x, y: touch.clientY - dragOffset.y });
+          }
+        }}
+        onTouchEnd={() => setIsDragging(false)}
       >
-        <a href="/app" className="relative flex items-center gap-2 px-3 py-2 bg-black/60 backdrop-blur-sm border border-purple-500/50 rounded-lg hover:border-purple-400 transition-all group">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+        <a href="/app" className="flex items-center gap-2 px-3 py-2 bg-black/60 backdrop-blur-sm border border-purple-500/50 rounded-lg hover:border-purple-400 transition-all group">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
             <i className="fas fa-user-shield text-white text-sm"></i>
           </div>
-          <div className="text-left">
+          <div className="text-left whitespace-nowrap">
             <div className="text-[8px] text-purple-400 font-black uppercase">Admin</div>
             <div className="text-[6px] text-gray-500">Login</div>
           </div>

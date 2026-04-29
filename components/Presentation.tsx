@@ -24,6 +24,9 @@ const Presentation: React.FC = () => {
   const [demoOutput, setDemoOutput] = useState('');
   const [demoLoading, setDemoLoading] = useState(false);
   const [demoCount, setDemoCount] = useState(3);
+  const [balloonPos, setBalloonPos] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
   const handleDemoSubmit = async () => {
     if (!demoInput.trim() || demoCount <= 0) return;
@@ -211,10 +214,29 @@ const Presentation: React.FC = () => {
         </a>
       </div>
 
-      {/* Admin Login Balloon - Fixed bottom right */}
-      <div className="fixed bottom-4 right-4 z-50 group">
-        <a href="/app" className="relative flex items-center gap-2 px-3 py-2 bg-black/80 backdrop-blur border border-purple-500/50 rounded-lg shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:border-purple-400 transition-all">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
+      {/* Admin Login Balloon - Draggable, 40% opacity */}
+      <div 
+        className="fixed z-50 cursor-move select-none"
+        style={{ 
+          left: `${balloonPos.x}px`, 
+          top: `${balloonPos.y}px`,
+          opacity: 0.4,
+          transition: isDragging ? 'none' : 'opacity 0.3s'
+        }}
+        onMouseDown={(e) => {
+          setIsDragging(true);
+          setDragOffset({ x: e.clientX - balloonPos.x, y: e.clientY - balloonPos.y });
+        }}
+        onMouseMove={(e) => {
+          if (isDragging) {
+            setBalloonPos({ x: e.clientX - dragOffset.x, y: e.clientY - dragOffset.y });
+          }
+        }}
+        onMouseUp={() => setIsDragging(false)}
+        onMouseLeave={() => setIsDragging(false)}
+      >
+        <a href="/app" className="relative flex items-center gap-2 px-3 py-2 bg-black/60 backdrop-blur-sm border border-purple-500/50 rounded-lg hover:border-purple-400 transition-all group">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center group-hover:scale-110 transition-transform">
             <i className="fas fa-user-shield text-white text-sm"></i>
           </div>
           <div className="text-left">

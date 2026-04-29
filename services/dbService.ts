@@ -5,7 +5,7 @@
 // No native dependencies - works everywhere including Vercel serverless.
 // ============================================================
 
-import { Database } from '../services/ts-database';
+import { Database } from './ts-database';
 
 // Use pure TS database - works on Vercel!
 const DB_PATH = process.env.DATABASE_PATH || 'local_data.db';

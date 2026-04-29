@@ -1803,6 +1803,24 @@ const MainApp: React.FC = () => {
             <i className="fas fa-brain text-[8px] text-white"></i>
           </button>
         )}
+
+        {/* Admin Login Balloon Popup */}
+        <button
+          onClick={() => setIsAdmin(false)}
+          className="fixed top-4 right-4 z-50 group"
+          title="Admin Login"
+        >
+          <div className="relative">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 border-2 border-purple-400 flex items-center justify-center shadow-[0_0_20px_rgba(168,85,247,0.5)] group-hover:scale-110 transition-all">
+              <i className="fas fa-user-shield text-white text-sm"></i>
+            </div>
+            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-black animate-pulse"></div>
+          </div>
+          <div className="absolute top-12 right-0 w-48 bg-black/90 backdrop-blur border border-purple-500/50 rounded-lg p-2 opacity-0 group-hover:opacity-100 transition-all pointer-events-none group-hover:pointer-events-auto shadow-[0_0_30px_rgba(168,85,247,0.3)]">
+            <div className="text-[8px] text-purple-400 font-black uppercase mb-1">Admin Panel</div>
+            <div className="text-[6px] text-gray-500">Click to access admin settings & subscriptions</div>
+          </div>
+        </button>
       </main>
 
       {(isScanning) && (

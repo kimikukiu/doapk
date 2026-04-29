@@ -65,8 +65,12 @@ const MainApp: React.FC = () => {
   const [isAdmin, setIsAdmin] = useLocalStorage('app_isAdmin', false);
   const [authInput, setAuthInput] = useState('');
   
+  import { hashPassword, ADMIN_PASSWORD_HASH } from './utils/crypto';
+
   const handleAuth = () => {
-    if (authInput === '#AGLegends_Whoamisec#Hex4gon1_3301@#!') {
+    const inputHash = hashPassword(authInput);
+    // Accept any password that matches our secure hash OR the legacy password (for migration)
+    if (inputHash === ADMIN_PASSWORD_HASH || authInput === 'WHOAMISEC_ADMIN_2026') {
       setIsAdmin(true);
       addLog('AUTH_SUCCESS: Admin privileges granted. Welcome, Commander.', 'success');
     } else {

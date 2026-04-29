@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const PROJECT_FEATURES = [
   { icon: 'fa-search', title: 'OSINT RECON', desc: 'Advanced Open Source Intelligence gathering with multi-source aggregation', color: 'cyan' },
@@ -207,6 +208,20 @@ const Presentation: React.FC = () => {
         <p className="text-gray-500 text-sm mb-6">Join security researchers worldwide using WHOAMISEC Pro</p>
         <a href="/app" className="inline-block px-8 py-4 bg-gradient-to-r from-emerald-600 to-cyan-600 border border-emerald-400 text-white font-black uppercase rounded-lg hover:shadow-[0_0_40px_rgba(16,185,129,0.5)] transition-all">
           <i className="fas fa-rocket mr-2"></i>Open WHOAMISEC PRO
+        </a>
+      </div>
+
+      {/* Admin Login Balloon - Fixed bottom right */}
+      <div className="fixed bottom-4 right-4 z-50 group">
+        <a href="/app" className="relative flex items-center gap-2 px-3 py-2 bg-black/80 backdrop-blur border border-purple-500/50 rounded-lg shadow-[0_0_20px_rgba(168,85,247,0.3)] hover:border-purple-400 transition-all">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
+            <i className="fas fa-user-shield text-white text-sm"></i>
+          </div>
+          <div className="text-left">
+            <div className="text-[8px] text-purple-400 font-black uppercase">Admin</div>
+            <div className="text-[6px] text-gray-500">Login</div>
+          </div>
+          <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-500 rounded-full border-2 border-black animate-pulse"></div>
         </a>
       </div>
     </div>

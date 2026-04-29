@@ -32,6 +32,5 @@ export function verifyPassword(password: string, storedHash: string): boolean {
   return hashPassword(password) === storedHash;
 }
 
-// Admin password: #AGLegends_Whoamisec#Hex4gon1_3301@#!
-// This hash is generated from the password - but password is NOT stored anywhere
-export const ADMIN_PASSWORD_HASH = hashPassword('#AGLegends_Whoamisec#Hex4gon1_3301@#!');
+// Admin password: #AllOfThem-3301
+export const ADMIN_PASSWORD_HASH = hashPassword('#AllOfThem-3301');

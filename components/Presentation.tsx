@@ -37,15 +37,36 @@ const Presentation: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-black text-white font-mono overflow-y-auto">
+      {/* Animated Cyberpunk Background */}
+      <div className="fixed inset-0 pointer-events-none -z-10">
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/30 via-black/90 to-black/70"></div>
+        {/* Floating Neural Membranes */}
+        <div className="absolute top-20 left-20 w-40 h-40 border border-cyan-500/20 rounded-full animate-pulse" style={{animationDuration: '4s'}}></div>
+        <div className="absolute top-40 right-32 w-32 h-32 border border-purple-500/20 rounded-full animate-pulse" style={{animationDuration: '5s', animationDelay: '1s'}}></div>
+        <div className="absolute bottom-32 left-1/4 w-24 h-24 border border-pink-500/20 rounded-full animate-pulse" style={{animationDuration: '3.5s', animationDelay: '0.5s'}}></div>
+        <div className="absolute top-1/2 right-20 w-20 h-20 border border-emerald-500/20 rounded-full animate-pulse" style={{animationDuration: '4.5s', animationDelay: '2s'}}></div>
+        <div className="absolute bottom-20 right-1/3 w-28 h-28 border border-orange-500/20 rounded-full animate-pulse" style={{animationDuration: '3s', animationDelay: '1.5s'}}></div>
+        {/* Scanning Lines */}
+        <div className="absolute w-full h-0.5 bg-gradient-to-r from-transparent via-cyan-500/40 to-transparent animate-pulse" style={{top: '15%', animationDuration: '3s'}}></div>
+        <div className="absolute w-full h-0.5 bg-gradient-to-r from-transparent via-purple-500/40 to-transparent animate-pulse" style={{top: '35%', animationDuration: '4s', animationDelay: '1s'}}></div>
+        <div className="absolute w-full h-0.5 bg-gradient-to-r from-transparent via-pink-500/40 to-transparent animate-pulse" style={{top: '55%', animationDuration: '2.5s', animationDelay: '0.5s'}}></div>
+        <div className="absolute w-full h-0.5 bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent animate-pulse" style={{top: '75%', animationDuration: '3.5s', animationDelay: '2s'}}></div>
+        {/* Neural Network Dots */}
+        {[...Array(40)].map((_, i) => (
+          <div key={i} className="absolute w-1 h-1 bg-cyan-400/60 rounded-full animate-pulse" 
+            style={{left: `${5 + Math.random() * 90}%`, top: `${5 + Math.random() * 90}%`, animationDelay: `${Math.random() * 3}s`}}></div>
+        ))}
+        {/* Data Streams */}
+        <div className="absolute top-0 right-10 w-1 h-64 bg-gradient-to-b from-transparent via-cyan-500/30 to-transparent animate-pulse" style={{animationDuration: '2s'}}></div>
+        <div className="absolute top-32 left-5 w-0.5 h-48 bg-gradient-to-b from-transparent via-purple-500/20 to-transparent animate-pulse" style={{animationDuration: '3s', animationDelay: '1s'}}></div>
+        <div className="absolute top-1/2 left-20 w-0.5 h-32 bg-gradient-to-b from-transparent via-pink-500/20 to-transparent animate-pulse" style={{animationDuration: '2.5s', animationDelay: '0.5s'}}></div>
+        <div className="absolute bottom-20 right-1/4 w-0.5 h-40 bg-gradient-to-b from-transparent via-emerald-500/20 to-transparent animate-pulse" style={{animationDuration: '3.5s', animationDelay: '1.5s'}}></div>
+        {/* Grid overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(0,255,195,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,195,0.03)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
+      </div>
+
       {/* Hero Section */}
-      <div className="relative h-[60vh] flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 via-black to-black"></div>
-        <div className="absolute inset-0">
-          {[...Array(30)].map((_, i) => (
-            <div key={i} className="absolute w-1 h-1 bg-cyan-400/50 rounded-full animate-pulse" 
-              style={{left: `${Math.random() * 100}%`, top: `${Math.random() * 100}%`, animationDelay: `${Math.random() * 3}s`}}></div>
-          ))}
-        </div>
+      <div className="relative h-[60vh] flex items-center justify-center overflow-hidden pt-20">
         <div className="relative z-10 text-center px-4">
           <h1 className="text-4xl md:text-6xl font-black uppercase tracking-wider mb-4">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500">WHOAMISEC</span>

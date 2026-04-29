@@ -14,9 +14,6 @@
     "android:build": "npm run build && npx cap sync android && cd android && ./gradlew assembleDebug"
   },
   "dependencies": {
-    "@capacitor/android": "^8.2.0",
-    "@capacitor/cli": "^8.2.0",
-    "@capacitor/core": "^8.2.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@fortawesome/free-solid-svg-icons": "^7.2.0",
@@ -46,6 +43,9 @@
     "tsx": "^4.21.0"
   },
   "devDependencies": {
+    "@capacitor/android": "^8.3.1",
+    "@capacitor/cli": "^8.3.1",
+    "@capacitor/core": "^8.3.1",
     "@types/file-saver": "^2.0.7",
     "@types/node": "^22.14.0",
     "@types/node-telegram-bot-api": "^0.64.3",
